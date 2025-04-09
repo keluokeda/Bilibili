@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Surface
+import com.ke.bilibili.tv.ui.LoginRoute
 import com.ke.bilibili.tv.ui.SplashRoute
 import com.ke.bilibili.tv.ui.theme.BilibiliTheme
 import com.ke.biliblli.common.Screen
@@ -33,7 +34,19 @@ class MainActivity : ComponentActivity() {
                     composable<Screen.Splash> {
                         SplashRoute(toMain = {
 
-                        }) { }
+                        }) {
+                            navController.navigate(Screen.Login) {
+                                popUpTo(Screen.Login) {
+                                    inclusive = true
+                                }
+                            }
+                        }
+                    }
+
+                    composable<Screen.Login> {
+                        LoginRoute {
+
+                        }
                     }
                 }
             }
