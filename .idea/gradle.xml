@@ -15,6 +15,7 @@
             <option value="$PROJECT_DIR$/common" />
             <option value="$PROJECT_DIR$/db" />
             <option value="$PROJECT_DIR$/repository" />
+            <option value="$PROJECT_DIR$/tv" />
             <option value="$PROJECT_DIR$/viewModel" />
           </set>
         </option>
