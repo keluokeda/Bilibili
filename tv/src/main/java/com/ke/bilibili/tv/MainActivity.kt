@@ -3,19 +3,14 @@ package com.ke.bilibili.tv
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.tv.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.tv.material3.ExperimentalTvMaterial3Api
-import androidx.tv.material3.Surface
 import com.ke.bilibili.tv.ui.LoginRoute
+import com.ke.bilibili.tv.ui.MainRoute
 import com.ke.bilibili.tv.ui.SplashRoute
+import com.ke.bilibili.tv.ui.VideoDetailRoute
 import com.ke.bilibili.tv.ui.theme.BilibiliTheme
 import com.ke.biliblli.common.Screen
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,9 +29,14 @@ class MainActivity : ComponentActivity() {
                     composable<Screen.Splash> {
                         SplashRoute(toMain = {
 
+                            navController.navigate(Screen.Main) {
+                                popUpTo(Screen.Splash) {
+                                    inclusive = true
+                                }
+                            }
                         }) {
                             navController.navigate(Screen.Login) {
-                                popUpTo(Screen.Login) {
+                                popUpTo(Screen.Splash) {
                                     inclusive = true
                                 }
                             }
@@ -45,27 +45,25 @@ class MainActivity : ComponentActivity() {
 
                     composable<Screen.Login> {
                         LoginRoute {
-
+                            navController.navigate(Screen.Main) {
+                                popUpTo(Screen.Login) {
+                                    inclusive = true
+                                }
+                            }
                         }
+                    }
+
+                    composable<Screen.Main> {
+                        MainRoute({
+                            navController.navigate(it)
+                        })
+                    }
+
+                    composable<Screen.VideoDetail> {
+                        VideoDetailRoute()
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    BilibiliTheme {
-        Greeting("Android")
     }
 }

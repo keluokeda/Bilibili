@@ -14,6 +14,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -34,17 +36,25 @@ import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.CopyAll
+import androidx.compose.material.icons.filled.CurrencyBitcoin
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PlayCircleOutline
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.filled.ThumbUpOffAlt
 import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -52,7 +62,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
@@ -69,14 +81,17 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -87,6 +102,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
 import androidx.paging.compose.LazyPagingItems
@@ -104,14 +120,19 @@ import com.ke.biliblli.viewmodel.VideoCommentSortType
 import com.ke.biliblli.viewmodel.VideoCommentsEvent
 import com.ke.biliblli.viewmodel.VideoCommentsViewModel
 import com.ke.biliblli.viewmodel.VideoDetailAction
+import com.ke.biliblli.viewmodel.VideoDetailEvent
 import com.ke.biliblli.viewmodel.VideoDetailState
 import com.ke.biliblli.viewmodel.VideoDetailViewModel
 import com.ke.biliblli.viewmodel.VideoInfoAction
 import com.ke.biliblli.viewmodel.VideoInfoState
 import com.ke.biliblli.viewmodel.VideoInfoViewModel
+import com.ke.biliblli.viewmodel.VideoResolution
+import com.orhanobut.logger.Logger
 import dev.vivvvek.seeker.Seeker
 import dev.vivvvek.seeker.SeekerDefaults
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
 
 
 private val tabs = listOf("简介", "评论")
@@ -132,6 +153,7 @@ fun VideoDetailRoute(
 
 
 
+
     VideoDetailScreen(uiState, {
         viewModel.handleAction(VideoDetailAction.Retry)
     }, {
@@ -142,7 +164,45 @@ fun VideoDetailRoute(
         viewModel.handleAction(VideoDetailAction.OnSliderValueChangeFinished(it))
     }, {
         viewModel.handleAction(VideoDetailAction.PlayPauseVideo(it))
-    }, toVideoDetail = toVideoDetail)
+    }, toVideoDetail = toVideoDetail, {
+        viewModel.handleAction(VideoDetailAction.ShowVideoResolutionListDialog)
+    })
+
+
+    var videoResolutionPair by rememberSaveable {
+        mutableStateOf<Pair<List<VideoResolution>, VideoResolution>?>(null)
+    }
+
+    viewModel.event.observeWithLifecycle {
+        when (it) {
+            is VideoDetailEvent.ShowVideoResolutionListDialog -> {
+                videoResolutionPair = it.list to it.current
+            }
+        }
+    }
+
+    if (videoResolutionPair != null) {
+        ModalBottomSheet(onDismissRequest = {
+            videoResolutionPair = null
+        }) {
+            val pair = videoResolutionPair!!
+
+            pair.first.forEach { videoResolution ->
+                ListItem(headlineContent = {
+                    Text(videoResolution.text)
+                }, leadingContent = {
+                    if (videoResolution == pair.second) {
+                        Icon(Icons.Default.CheckBox, null, tint = MaterialTheme.colorScheme.primary)
+                    } else {
+                        Icon(Icons.Default.CheckBoxOutlineBlank, null)
+                    }
+                }, modifier = Modifier.clickable(enabled = videoResolution != pair.second) {
+                    viewModel.handleAction(VideoDetailAction.UpdateVideoResolution(videoResolution))
+                    videoResolutionPair = null
+                })
+            }
+        }
+    }
 }
 
 @UnstableApi
@@ -154,7 +214,8 @@ private fun VideoDetailScreen(
     showController: (Boolean) -> Unit,
     onValueChangeFinished: (Long) -> Unit,
     setPlay: (Boolean) -> Unit,
-    toVideoDetail: (Screen.VideoDetail) -> Unit
+    toVideoDetail: (Screen.VideoDetail) -> Unit,
+    showVideoResolutionListDialog: () -> Unit
 ) {
 
 
@@ -227,6 +288,15 @@ private fun VideoDetailScreen(
                                     }
                             )
 
+                            if (uiState.playbackState == Player.STATE_BUFFERING) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+
                             if (uiState.showController) {
                                 Column(
                                     modifier = Modifier
@@ -259,11 +329,14 @@ private fun VideoDetailScreen(
 
                                         Spacer(modifier = Modifier.weight(1f))
 
-                                        IconButton(onClick = {
-
-                                        }) {
-                                            Icon(Icons.Default.MoreVert, null)
+                                        TextButton(onClick = showVideoResolutionListDialog) {
+                                            Text(uiState.currentVideoResolution.text)
                                         }
+
+
+//                                        IconButton(onClick = showVideoResolutionListDialog) {
+//                                            Icon(Icons.Default.MoreVert, null)
+//                                        }
                                     }
 
                                     Spacer(modifier = Modifier.weight(1f))
@@ -287,9 +360,14 @@ private fun VideoDetailScreen(
                                             mutableFloatStateOf(-1f)
                                         }
 
+//                                        Logger.d("duration = ${uiState.player.duration}")
+
+                                        val duration =
+                                            if (uiState.player.duration < 0) 0 else uiState.player.duration
+
                                         Seeker(
                                             value = if (progress == -1f) uiState.currentPosition.toFloat() else progress,
-                                            range = 0f..uiState.player.duration.toFloat(),
+                                            range = 0f..duration.toFloat(),
                                             readAheadValue = uiState.player.bufferedPosition.toFloat(),
                                             onValueChange = {
                                                 progress = it
@@ -302,6 +380,8 @@ private fun VideoDetailScreen(
                                             ),
                                             modifier = Modifier.weight(1f)
                                         )
+
+
 
                                         IconButton(onClick = {
                                             setFullScreen(!uiState.isFullScreen)
@@ -470,12 +550,18 @@ private fun VideoInfoRoute(
 
     VideoInfoScreen(uiState, retry = {
         viewModel.handleAction(VideoInfoAction.Retry)
+    }, setExpanded = {
+        viewModel.handleAction(VideoInfoAction.SetExpanded(it))
     }, toVideoDetail = toVideoDetail)
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun VideoInfoScreen(
-    uiState: VideoInfoState, retry: () -> Unit, toVideoDetail: (Screen.VideoDetail) -> Unit
+    uiState: VideoInfoState,
+    retry: () -> Unit,
+    setExpanded: (Boolean) -> Unit,
+    toVideoDetail: (Screen.VideoDetail) -> Unit
 ) {
 
 
@@ -499,6 +585,185 @@ private fun VideoInfoScreen(
 
                 ) {
 
+                    item {
+                        val detail = uiState.info.view
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+//                                .padding(16.dp)
+                        ) {
+                            ListItem(
+                                headlineContent = {
+                                    Text(detail.owner.name, maxLines = 1)
+                                }, leadingContent = {
+                                    AsyncImage(
+                                        model = detail.owner.face,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .clip(CircleShape)
+                                    )
+                                }, supportingContent = {
+                                    Text(
+                                        uiState.info.card.card.sign,
+                                        maxLines = 1,
+                                        style = MaterialTheme.typography.labelMedium
+                                    )
+                                }, trailingContent = {
+                                    val buttonModifier = Modifier
+                                        .width(80.dp)
+                                        .height(32.dp)
+                                    if (uiState.info.card.following) {
+                                        TextButton(onClick = {}, modifier = buttonModifier) {
+                                            Text(
+                                                "已关注",
+                                                modifier = buttonModifier,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                    } else {
+                                        TextButton(onClick = {}, modifier = buttonModifier) {
+                                            Text(
+                                                "+关注",
+                                                modifier = buttonModifier,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                    }
+                                }
+                            )
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .clickable(onClick = {
+                                        setExpanded(!uiState.expanded)
+                                    })
+                            ) {
+                                Text(
+                                    uiState.info.view.title,
+                                    maxLines = if (uiState.expanded) Int.MAX_VALUE else 1,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Icon(
+                                    if (uiState.expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    tint = Color.Gray
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                val textStyle =
+                                    MaterialTheme.typography.labelMedium.copy(color = Color.Gray)
+                                Icon(
+                                    Icons.Default.PlayCircleOutline,
+                                    null,
+                                    modifier = Modifier.size(textStyle.fontSize.value.dp),
+                                    tint = textStyle.color
+                                )
+                                Text(
+                                    uiState.info.view.stat.view.format(),
+                                    style = textStyle
+                                )
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Icon(
+                                    Icons.AutoMirrored.Filled.Comment,
+                                    null,
+                                    modifier = Modifier.size(textStyle.fontSize.value.dp),
+                                    tint = textStyle.color
+                                )
+                                Text(
+                                    uiState.info.view.stat.danmaku.format(),
+                                    style = textStyle
+                                )
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Text(
+                                    simpleDateFormat.format(Date(uiState.info.view.ctime * 1000)),
+                                    style = textStyle
+                                )
+
+                            }
+
+                            if (uiState.expanded) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+
+                                ) {
+
+                                    Text(
+                                        uiState.info.view.desc,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        modifier = Modifier.padding(all = 16.dp)
+                                    )
+                                    FlowRow(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+//                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        uiState.info.tags.forEach {
+                                            AssistChip(
+                                                onClick = {},
+                                                label = {
+                                                    Text(it.name)
+                                                }
+                                            )
+                                        }
+                                    }
+
+
+                                }
+
+                            } else {
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceAround
+                            ) {
+                                VerticalIconButton(
+                                    Icons.Default.ThumbUp,
+                                    color = Color.Gray,
+                                    text = uiState.info.view.stat.like.format()
+                                ) { }
+
+
+                                VerticalIconButton(
+                                    Icons.Default.CurrencyBitcoin,
+                                    color = Color.Gray,
+                                    text = uiState.info.view.stat.coin.format()
+                                ) { }
+
+                                VerticalIconButton(
+                                    Icons.Default.Star,
+                                    color = Color.Gray,
+                                    text = uiState.info.view.stat.favorite.format()
+                                ) { }
+
+                                VerticalIconButton(
+                                    Icons.Default.Share,
+                                    color = Color.Gray,
+                                    text = uiState.info.view.stat.share.format()
+                                ) { }
+                            }
+                        }
+                    }
+
 
                     items(uiState.info.related) {
                         RelatedVideoItem(it) {
@@ -510,6 +775,36 @@ private fun VideoInfoScreen(
         }
     }
 }
+
+@Composable
+private fun VerticalIconButton(
+    imageVector: ImageVector,
+    color: Color,
+    text: String,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(imageVector, null, tint = color)
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(text, style = MaterialTheme.typography.labelMedium.copy(color = color))
+    }
+}
+
+@Composable
+@PreviewLightDark
+private fun VerticalIconButtonPreview() {
+    BilibiliTheme {
+        VerticalIconButton(Icons.Default.ThumbUp, color = Color.Gray, "10") { }
+    }
+}
+
+
+private val simpleDateFormat = SimpleDateFormat("yyyy年MM月dd日 HH:mm")
 
 @Composable
 private fun RelatedVideoItem(item: VideoDetailResponse, onClick: () -> Unit) {

@@ -7,6 +7,7 @@ import com.ke.biliblli.api.response.VideoInfoResponse
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -31,7 +32,19 @@ class VideoInfoViewModel @Inject constructor(
             }
 
             is VideoInfoAction.SetExpanded -> {
+                _uiState.update {
+                    when (it) {
 
+                        is VideoInfoState.Success -> {
+                            return@update it.copy(expanded = action.expanded)
+                        }
+
+                        else -> {
+                            return@update it
+                        }
+                    }
+
+                }
             }
         }
     }

@@ -16,6 +16,8 @@ import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.navigation.toRoute
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.Screen
+import com.ke.biliblli.viewmodel.VideoDetailEvent.*
+import com.orhanobut.logger.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
@@ -27,16 +29,35 @@ import javax.inject.Inject
 
 private const val minRatio = 1.0f
 
+val videoResolutionPairList = listOf<Pair<Int, String>>(
+    6 to "240P 极速",
+    16 to "360P 流畅",
+    32 to "480P 清晰",
+    64 to "720P 高清",
+    74 to "720P60 高帧率",
+    80 to "1080P 高清",
+    112 to "1080P+ 高码率",
+    116 to "1080P60 高帧率",
+    120 to "4K 超清",
+    125 to "HDR 真彩色",
+    126 to "杜比视界",
+    127 to "8K 超高清"
+)
+
 @UnstableApi
 @HiltViewModel
 class VideoDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val bilibiliRepository: BilibiliRepository,
-    @ApplicationContext context: Context
-) : BaseViewModel<VideoDetailState, VideoDetailAction, VideoDetailEvent>(VideoDetailState.Loading) {
+    @ApplicationContext context: Context,
+
+    ) :
+    BaseViewModel<VideoDetailState, VideoDetailAction, VideoDetailEvent>(VideoDetailState.Loading) {
+    var audioUrl: String = ""
+
     private val params = savedStateHandle.toRoute<Screen.VideoDetail>()
 
-    val dataSourceFactory: DataSource.Factory =
+    private val dataSourceFactory: DataSource.Factory =
         DefaultHttpDataSource.Factory()
             .setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 13_3_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15")
             .setDefaultRequestProperties(
@@ -47,6 +68,11 @@ class VideoDetailViewModel @Inject constructor(
 
     private val playerListener = object : Player.Listener {
         override fun onVideoSizeChanged(videoSize: VideoSize) {
+            Logger.d("视频分辨率变化 ${videoSize.width} ${videoSize.height}")
+
+            if (videoSize.height <= 0) {
+                return
+            }
             val ratio = videoSize.width.toFloat() / videoSize.height.toFloat()
 
             (uiState.value as? VideoDetailState.Content)?.copy(
@@ -60,6 +86,17 @@ class VideoDetailViewModel @Inject constructor(
 
             (uiState.value as? VideoDetailState.Content)?.copy(
                 isPlaying = isPlaying
+            )?.apply {
+                _uiState.value = this
+            }
+        }
+
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            super.onPlaybackStateChanged(playbackState)
+            Logger.d("onPlaybackStateChanged $playbackState")
+
+            (uiState.value as? VideoDetailState.Content)?.copy(
+                playbackState = playbackState
             )?.apply {
                 _uiState.value = this
             }
@@ -100,6 +137,7 @@ class VideoDetailViewModel @Inject constructor(
                     currentPosition = player.currentPosition
                 )?.apply {
                     _uiState.value = this
+//                    Logger.d("视频进度变了 ${currentPosition}")
                 }
 
 
@@ -121,11 +159,24 @@ class VideoDetailViewModel @Inject constructor(
             try {
                 val response = bilibiliRepository.videoUrl(params.cid, params.bvid).data!!
 
+
+
                 response.dash.run {
-                    val videoUrl = video.first().baseUrl
-                    val audioUrl = audio.first().baseUrl
-                    _uiState.value = VideoDetailState.Content(player)
-                    play(videoUrl, audioUrl)
+
+                    val list = video.map { dashVideo ->
+                        val text = videoResolutionPairList.first {
+                            it.first == dashVideo.id
+                        }.second
+
+                        VideoResolution(dashVideo.id, text, dashVideo.baseUrl)
+                    }.distinctBy {
+                        it.id
+                    }
+
+//                    val videoUrl = video.first().baseUrl
+                    audioUrl = audio.first().baseUrl
+                    _uiState.value = VideoDetailState.Content(player, list, list.first())
+                    play(list.first().url, audioUrl)
                 }
 
             } catch (e: Exception) {
@@ -178,6 +229,27 @@ class VideoDetailViewModel @Inject constructor(
             is VideoDetailAction.OnSliderValueChangeFinished -> {
                 player.seekTo(action.progress)
             }
+
+            VideoDetailAction.ShowVideoResolutionListDialog -> {
+                viewModelScope.launch {
+                    (uiState.value as? VideoDetailState.Content)?.apply {
+                        _event.send(
+                            ShowVideoResolutionListDialog(
+                                videoResolutionList,
+                                currentVideoResolution
+                            )
+                        )
+                    }
+                }
+            }
+
+            is VideoDetailAction.UpdateVideoResolution -> {
+                play(action.newValue.url, audioUrl)
+
+                _uiState.update {
+                    (it as VideoDetailState.Content).copy(currentVideoResolution = action.newValue)
+                }
+            }
         }
     }
 
@@ -201,17 +273,26 @@ class VideoDetailViewModel @Inject constructor(
 
 }
 
+data class VideoResolution(
+    val id: Int,
+    val text: String,
+    val url: String
+)
+
 
 sealed interface VideoDetailState {
     data object Loading : VideoDetailState
     data object Error : VideoDetailState
     data class Content(
         val player: ExoPlayer,
+        val videoResolutionList: List<VideoResolution>,
+        val currentVideoResolution: VideoResolution,
         val isFullScreen: Boolean = false,
         val ratio: Float = 16 / 9.0f,
         val showController: Boolean = false,
         val isPlaying: Boolean = true,
-        val currentPosition: Long = 0
+        val currentPosition: Long = 0,
+        val playbackState: Int = Player.STATE_BUFFERING
     ) :
         VideoDetailState
 }
@@ -232,8 +313,16 @@ sealed interface VideoDetailAction {
 //    data class OnPositionChanged(val position: Long) : VideoDetailAction
 
     data class OnSliderValueChangeFinished(val progress: Long) : VideoDetailAction
+
+    data object ShowVideoResolutionListDialog : VideoDetailAction
+
+    data class UpdateVideoResolution(val newValue: VideoResolution) : VideoDetailAction
 }
 
 sealed interface VideoDetailEvent {
 
+    data class ShowVideoResolutionListDialog(
+        val list: List<VideoResolution>,
+        val current: VideoResolution
+    ) : VideoDetailEvent
 }

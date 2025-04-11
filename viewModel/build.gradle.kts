@@ -65,4 +65,7 @@ dependencies {
 
     implementation("androidx.media3:media3-exoplayer-dash:1.6.0") // [Optional] If your media item is DASH
     implementation("androidx.media3:media3-exoplayer-hls:1.6.0") // [Optional] If you
+
+    implementation("com.orhanobut:logger:2.2.0")
+
 }

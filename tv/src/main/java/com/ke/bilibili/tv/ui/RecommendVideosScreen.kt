@@ -1,4 +1,4 @@
-package com.ke.biliblli.mobile.ui.home.recommend
+package com.ke.bilibili.tv.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,70 +19,74 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.PlayCircleOutline
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.tv.material3.Card
+import androidx.tv.material3.Icon
+import androidx.tv.material3.MaterialTheme
+import androidx.tv.material3.Text
 import coil.compose.AsyncImage
+import com.ke.bilibili.tv.observeWithLifecycle
+import com.ke.bilibili.tv.ui.theme.BilibiliTheme
+import com.ke.bilibili.tv.viewmodel.MainEvent
+import com.ke.bilibili.tv.viewmodel.MainViewModel
 import com.ke.biliblli.api.response.HomeRecommendResponse
 import com.ke.biliblli.api.response.VideoOwner
 import com.ke.biliblli.api.response.VideoStatus
+import com.ke.biliblli.common.Screen
 import com.ke.biliblli.common.duration
 import com.ke.biliblli.common.format
-import com.ke.biliblli.mobile.ui.theme.BilibiliTheme
 import com.ke.biliblli.viewmodel.HomeRecommendViewModel
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun HomeRecommendVideoListRoute(
-    onClick: (HomeRecommendResponse) -> Unit
+fun RecommendVideosRoute(
+    tabIndex: Int = 0,
+    toDetail: (Screen.VideoDetail) -> Unit,
 ) {
-
     val viewModel = hiltViewModel<HomeRecommendViewModel>()
-    val lazyPagingItems = viewModel.videoListFlow.collectAsLazyPagingItems()
-
-    PullToRefreshBox(
-        modifier = Modifier.fillMaxSize(),
-        isRefreshing = lazyPagingItems.loadState.refresh == LoadState.Loading,
-        onRefresh = {
-            lazyPagingItems.refresh()
-        }) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
 
 
-            items(count = lazyPagingItems.itemCount) {
-                val item = lazyPagingItems[it]!!
+    val videos = viewModel.videoListFlow.collectAsLazyPagingItems()
 
 
-                VideoItem(item, onClick = {
-                    onClick(item)
-                })
+    val mainViewModel = hiltViewModel<MainViewModel>()
+
+
+    mainViewModel.event.observeWithLifecycle {
+        when (it) {
+            is MainEvent.Refresh -> {
+                if (it.index == tabIndex) {
+                    videos.refresh()
+                }
             }
+        }
+    }
+
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(4),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(16.dp)
+    ) {
+        items(videos.itemCount) {
+            val item = videos[it]!!
 
 
+            VideoItem(item, onClick = {
+//                onClick(item)
+                toDetail(Screen.VideoDetail(cid = item.cid, bvid = item.bvid, id = item.id))
+            })
         }
     }
 }
+
 
 @Composable
 private fun VideoItem(item: HomeRecommendResponse, onClick: () -> Unit = {}) {

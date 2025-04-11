@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
 //                            navController.navigate(Screen.VideoDetail(29013182448, "BV1EZXxYyEeZ"))
                         }) {
                             navController.navigate(Screen.Login) {
-                                popUpTo(Screen.Login) {
+                                popUpTo(Screen.Splash) {
                                     inclusive = true
                                 }
                             }
