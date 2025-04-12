@@ -49,7 +49,7 @@ data class DashAudio(
 @Serializable
 data class DashDolby(
     val type: Int,
-    val audio: List<DashAudio>
+    val audio: List<DashAudio>? = null
 )
 
 @Serializable

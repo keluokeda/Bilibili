@@ -25,7 +25,7 @@ import com.ke.bilibili.tv.viewmodel.MainAction
 import com.ke.bilibili.tv.viewmodel.MainViewModel
 import com.ke.biliblli.common.Screen
 
-private val tabs = listOf("推荐", "热门", "排行")
+private val tabs = listOf("推荐", "热门", "排行", "稍后再看")
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -99,6 +99,8 @@ fun MainRoute(toVideoDetail: (Screen.VideoDetail) -> Unit) {
                     }
                 }
 
+            } else if (selectedIndex == 3) {
+                LaterWatchRoute(toVideoDetail)
             }
         }
 

@@ -4,6 +4,7 @@ import com.ke.biliblli.api.BilibiliApi
 import com.ke.biliblli.api.response.BaseResponse
 import com.ke.biliblli.api.response.CommentResponse
 import com.ke.biliblli.api.response.HomeRecommendListResponse
+import com.ke.biliblli.api.response.LaterWatchResponse
 import com.ke.biliblli.api.response.LoginInfoResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
@@ -28,6 +29,10 @@ class BilibiliRepositoryImpl @Inject constructor(
     private val bilibiliStorage: BilibiliStorage
 ) :
     BilibiliRepository {
+
+    override suspend fun laterWatchList(): BaseResponse<LaterWatchResponse> {
+        return bilibiliApi.laterWatch()
+    }
 
     override suspend fun comments(
         index: Int,

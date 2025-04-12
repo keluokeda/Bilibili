@@ -3,6 +3,7 @@ package com.ke.biliblli.common
 import com.ke.biliblli.api.response.BaseResponse
 import com.ke.biliblli.api.response.CommentResponse
 import com.ke.biliblli.api.response.HomeRecommendListResponse
+import com.ke.biliblli.api.response.LaterWatchResponse
 import com.ke.biliblli.api.response.LoginInfoResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
@@ -33,5 +34,7 @@ interface BilibiliRepository {
     ): BaseResponse<VideoInfoResponse>
 
 
-    suspend fun comments(index: Int, oid: Long, type: Int,sort: Int): BaseResponse<CommentResponse>
+    suspend fun laterWatchList(): BaseResponse<LaterWatchResponse>
+
+    suspend fun comments(index: Int, oid: Long, type: Int, sort: Int): BaseResponse<CommentResponse>
 }

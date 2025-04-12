@@ -3,6 +3,7 @@ package com.ke.biliblli.api
 import com.ke.biliblli.api.response.BaseResponse
 import com.ke.biliblli.api.response.CommentResponse
 import com.ke.biliblli.api.response.HomeRecommendListResponse
+import com.ke.biliblli.api.response.LaterWatchResponse
 import com.ke.biliblli.api.response.LoginInfoResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
@@ -35,8 +36,8 @@ interface BilibiliApi {
     @GET("x/player/wbi/playurl")
     suspend fun videoUrl(
         @Query("cid") cid: Long,
-        @Query("qn") qn: Int ,
-        @Query("fnval") fnval: Int ,
+        @Query("qn") qn: Int,
+        @Query("fnval") fnval: Int,
         @Query("bvid") bvid: String,
         @Query("fourk") fourk: Int = 1,
         @Query("voice_balance") voiceBalance: Int = 1,
@@ -101,6 +102,12 @@ interface BilibiliApi {
 
     @GET("x/web-interface/history/cursor")
     suspend fun history()
+
+    /**
+     * 稍后再看
+     */
+    @GET("x/v2/history/toview")
+    suspend fun laterWatch(): BaseResponse<LaterWatchResponse>
 
     companion object {
         const val baseUrl = "https://api.bilibili.com/"
