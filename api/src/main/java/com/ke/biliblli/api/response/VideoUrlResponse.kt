@@ -28,7 +28,8 @@ data class VideoUrlResponse(
 data class VideoDash(
     val duration: Long,
     val video: List<DashVideo>,
-    val audio: List<DashAudio>
+    val audio: List<DashAudio>,
+    val dolby: DashDolby? = null
 )
 
 @Serializable
@@ -43,6 +44,12 @@ data class DashAudio(
     val id: Int,
     val baseUrl: String,
     val backupUrl: List<String>,
+)
+
+@Serializable
+data class DashDolby(
+    val type: Int,
+    val audio: List<DashAudio>
 )
 
 @Serializable

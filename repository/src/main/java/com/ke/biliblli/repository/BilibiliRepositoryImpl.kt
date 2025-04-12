@@ -82,13 +82,17 @@ class BilibiliRepositoryImpl @Inject constructor(
             current
         }
 
+        val fnval = 4048
+//            0b111111010000
+        val qn = 126
 
         val now = System.currentTimeMillis() / 1000
         val treeMap = TreeMap<String, Any>()
         treeMap.put("cid", cid)
         treeMap.put("bvid", bvid)
-        treeMap.put("qn", 80)
-        treeMap.put("fnval", 4048)
+        treeMap.put("qn", qn)
+//        treeMap.put("qn", 80)
+        treeMap.put("fnval", fnval)//4048
         treeMap.put("fourk", 1)
         treeMap.put("voice_balance", 1)
         treeMap.put("gaia_source", "pre-load")
@@ -97,7 +101,14 @@ class BilibiliRepositoryImpl @Inject constructor(
 
         val sign = WbiUtil.enc(treeMap, wbiParams.image, wbiParams.sub)
 
-        return bilibiliApi.videoUrl(cid, bvid = bvid, wts = now, sign = sign ?: "")
+        return bilibiliApi.videoUrl(
+            cid,
+            bvid = bvid,
+            qn = qn,
+            fnval = fnval,
+            wts = now,
+            sign = sign ?: ""
+        )
 
     }
 

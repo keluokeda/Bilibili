@@ -4,13 +4,16 @@ import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
+import androidx.media3.common.Tracks
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
@@ -45,6 +48,19 @@ val videoResolutionPairList = listOf<Pair<Int, String>>(
     127 to "8K 超高清"
 )
 
+val audioResolutionPairList = listOf<Triple<Int, Int, String>>(
+//    30216 to "64K",
+//    30232 to "132K",
+//    30280 to "192K",
+//    30250 to "杜比全景声",
+//    30251 to "Hi-Res无损"
+    Triple(0, 30216, "64K"),
+    Triple(1, 30232, "132K"),
+    Triple(2, 30280, "192K"),
+    Triple(3, 30250, "杜比全景声"),
+    Triple(4, 30251, "Hi-Res无损")
+)
+
 @UnstableApi
 @HiltViewModel
 class VideoDetailViewModel @Inject constructor(
@@ -54,7 +70,6 @@ class VideoDetailViewModel @Inject constructor(
 
     ) :
     BaseViewModel<VideoDetailState, VideoDetailAction, VideoDetailEvent>(VideoDetailState.Loading) {
-    var audioUrl: String = ""
 
     private val params = savedStateHandle.toRoute<Screen.VideoDetail>()
 
@@ -66,6 +81,24 @@ class VideoDetailViewModel @Inject constructor(
                     "referer" to "https://www.bilibili.com"
                 )
             )
+
+    private val analyticsListener = object : AnalyticsListener {
+        override fun onTracksChanged(
+            eventTime: AnalyticsListener.EventTime,
+            tracks: Tracks
+        ) {
+            super.onTracksChanged(eventTime, tracks)
+
+//            tracks.groups.forEach {
+//                if (it.type == C.TRACK_TYPE_VIDEO) {
+//                    if (it.isTrackSelected(0)) {
+//                        val format = it.getTrackFormat(0)
+//                        Logger.d("format = ${format.bitrate}")
+//                    }
+//                }
+//            }
+        }
+    }
 
     private val playerListener = object : Player.Listener {
         override fun onVideoSizeChanged(videoSize: VideoSize) {
@@ -102,6 +135,8 @@ class VideoDetailViewModel @Inject constructor(
                 _uiState.value = this
             }
         }
+
+
     }
 
     private val renderersFactory =
@@ -111,6 +146,9 @@ class VideoDetailViewModel @Inject constructor(
         .build().apply {
             playWhenReady = true
             addListener(playerListener)
+            addAnalyticsListener(analyticsListener)
+
+
         }
 
     /**
@@ -120,7 +158,17 @@ class VideoDetailViewModel @Inject constructor(
         val videoSource: MediaSource =
             ProgressiveMediaSource.Factory(dataSourceFactory)
 
-                .createMediaSource(MediaItem.fromUri(videoUrl))
+                .createMediaSource(
+//                    MediaItem.fromUri(videoUrl)
+//                        .apply {
+//
+//                        }
+                    MediaItem.Builder()
+                        .setUri(videoUrl)
+                        .setMimeType(MimeTypes.APPLICATION_MPD)
+                        .build()
+                )
+
         val audioSource: MediaSource =
             ProgressiveMediaSource.Factory(dataSourceFactory)
                 .createMediaSource(MediaItem.fromUri(audioUrl))
@@ -141,10 +189,7 @@ class VideoDetailViewModel @Inject constructor(
                     currentPosition = player.currentPosition
                 )?.apply {
                     _uiState.value = this
-//                    Logger.d("视频进度变了 ${currentPosition}")
                 }
-
-
                 delay(1000)
             }
         }
@@ -153,6 +198,7 @@ class VideoDetailViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         player.removeListener(playerListener)
+        player.removeAnalyticsListener(analyticsListener)
         player.release()
     }
 
@@ -167,7 +213,7 @@ class VideoDetailViewModel @Inject constructor(
 
                 response.dash.run {
 
-                    val list = video.map { dashVideo ->
+                    val videoList = video.map { dashVideo ->
                         val text = videoResolutionPairList.first {
                             it.first == dashVideo.id
                         }.second
@@ -177,10 +223,35 @@ class VideoDetailViewModel @Inject constructor(
                         it.id
                     }.sortedByDescending { it.id }
 
-//                    val videoUrl = video.first().baseUrl
-                    audioUrl = audio.first().baseUrl
-                    _uiState.value = VideoDetailState.Content(player, list, list.first())
-                    play(list.first().url, audioUrl)
+
+                    Logger.d(audio.map {
+                        it.id
+                    })
+
+                    val audioList = (audio + (dolby?.audio ?: emptyList())).map { audio ->
+                        val triple = audioResolutionPairList.first {
+                            it.second == audio.id
+                        }
+
+                        AudioResolution(audio.id, triple.third, audio.baseUrl) to triple.first
+                    }.sortedByDescending {
+                        it.second
+                    }.map {
+                        it.first
+                    }
+                        .distinctBy {
+                            it.id
+                        }
+
+                    _uiState.value = VideoDetailState.Content(
+                        player,
+                        videoResolutionList = videoList,
+                        currentVideoResolution = videoList.first(),
+                        audioResolutionList = audioList,
+                        currentAudioResolution = audioList.first()
+
+                    )
+                    play(videoList.first().url, audioList.first().url)
                 }
 
             } catch (e: Exception) {
@@ -209,13 +280,13 @@ class VideoDetailViewModel @Inject constructor(
                         (it as VideoDetailState.Content).copy(showController = true)
                     }
 
-                    hideController(false)
+                    hideController(false, action.duration)
 
                 } else {
 //                    _uiState.update {
 //                        (it as VideoDetailState.Content).copy(showController = false)
 //                    }
-                    hideController(true)
+                    hideController(true, action.duration)
                 }
 
 
@@ -252,10 +323,19 @@ class VideoDetailViewModel @Inject constructor(
 
                 _uiState.update {
 
-
                     (it as VideoDetailState.Content).copy(currentVideoResolution = action.newValue)
                         .apply {
-                            play(action.newValue.url, audioUrl, currentPosition)
+                            play(action.newValue.url, currentAudioResolution.url, currentPosition)
+                        }
+                }
+            }
+
+            is VideoDetailAction.UpdateAudioResolution -> {
+                _uiState.update {
+
+                    (it as VideoDetailState.Content).copy(currentAudioResolution = action.newValue)
+                        .apply {
+                            play(currentVideoResolution.url, action.newValue.url, currentPosition)
                         }
                 }
             }
@@ -265,13 +345,13 @@ class VideoDetailViewModel @Inject constructor(
 
     private var hideControllerJob: Job? = null
 
-    private fun hideController(now: Boolean) {
+    private fun hideController(now: Boolean, duration: Long) {
         hideControllerJob?.cancel()
         hideControllerJob =
             viewModelScope.launch {
                 delay(
                     if (now) 0 else
-                        5000
+                        duration
                 )
 
                 _uiState.update {
@@ -288,6 +368,12 @@ data class VideoResolution(
     val url: String
 )
 
+data class AudioResolution(
+    val id: Int,
+    val text: String,
+    val url: String
+)
+
 
 sealed interface VideoDetailState {
     data object Loading : VideoDetailState
@@ -296,6 +382,8 @@ sealed interface VideoDetailState {
         val player: ExoPlayer,
         val videoResolutionList: List<VideoResolution>,
         val currentVideoResolution: VideoResolution,
+        val audioResolutionList: List<AudioResolution>,
+        val currentAudioResolution: AudioResolution,
         val isFullScreen: Boolean = false,
         val ratio: Float = 16 / 9.0f,
         val showController: Boolean = false,
@@ -314,7 +402,7 @@ sealed interface VideoDetailAction {
 
 //    data class OnVideoSizeChanged(val width: Int, val height: Int) : VideoDetailAction
 
-    data class ShowController(val show: Boolean) : VideoDetailAction
+    data class ShowController(val show: Boolean, val duration: Long = 5000) : VideoDetailAction
 
     data class PlayPauseVideo(val play: Boolean) : VideoDetailAction
 
@@ -326,6 +414,9 @@ sealed interface VideoDetailAction {
     data object ShowVideoResolutionListDialog : VideoDetailAction
 
     data class UpdateVideoResolution(val newValue: VideoResolution) : VideoDetailAction
+
+    data class UpdateAudioResolution(val newValue: AudioResolution) : VideoDetailAction
+
 }
 
 sealed interface VideoDetailEvent {

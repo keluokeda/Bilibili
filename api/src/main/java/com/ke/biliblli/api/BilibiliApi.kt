@@ -35,8 +35,8 @@ interface BilibiliApi {
     @GET("x/player/wbi/playurl")
     suspend fun videoUrl(
         @Query("cid") cid: Long,
-        @Query("qn") qn: Int = 80,
-        @Query("fnval") fnval: Int = 4048,
+        @Query("qn") qn: Int ,
+        @Query("fnval") fnval: Int ,
         @Query("bvid") bvid: String,
         @Query("fourk") fourk: Int = 1,
         @Query("voice_balance") voiceBalance: Int = 1,
@@ -97,6 +97,10 @@ interface BilibiliApi {
         @Query("type") type: Int,
         @Query("sort") sort: Int
     ): BaseResponse<CommentResponse>
+
+
+    @GET("x/web-interface/history/cursor")
+    suspend fun history()
 
     companion object {
         const val baseUrl = "https://api.bilibili.com/"
