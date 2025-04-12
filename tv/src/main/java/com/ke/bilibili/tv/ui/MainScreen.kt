@@ -1,5 +1,6 @@
 package com.ke.bilibili.tv.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Tab
 import androidx.tv.material3.TabRow
 import androidx.tv.material3.Text
@@ -33,7 +35,12 @@ fun MainRoute(toVideoDetail: (Screen.VideoDetail) -> Unit) {
 
     val mainViewModel = hiltViewModel<MainViewModel>()
 
-    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize(),
+//            .background(MaterialTheme.colorScheme.background),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         TabRow(
             selectedTabIndex = selectedIndex,
             modifier = Modifier
@@ -61,6 +68,7 @@ fun MainRoute(toVideoDetail: (Screen.VideoDetail) -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
+
         ) {
             if (selectedIndex == 0) {
                 RecommendVideosRoute(tabIndex = 0, toVideoDetail)

@@ -10,7 +10,7 @@ import androidx.tv.material3.lightColorScheme
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun BilibiliTheme(
-    isInDarkTheme: Boolean = isSystemInDarkTheme(),
+    isInDarkTheme: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = if (isInDarkTheme) {

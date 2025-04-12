@@ -9,6 +9,7 @@ import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
@@ -103,7 +104,10 @@ class VideoDetailViewModel @Inject constructor(
         }
     }
 
-    private val player = ExoPlayer.Builder(context)
+    private val renderersFactory =
+        DefaultRenderersFactory(context).forceEnableMediaCodecAsynchronousQueueing()
+
+    private val player = ExoPlayer.Builder(context, renderersFactory)
         .build().apply {
             playWhenReady = true
             addListener(playerListener)
@@ -112,7 +116,7 @@ class VideoDetailViewModel @Inject constructor(
     /**
      * 播放视频
      */
-    private fun play(videoUrl: String, audioUrl: String) {
+    private fun play(videoUrl: String, audioUrl: String, startPositionMs: Long = 0) {
         val videoSource: MediaSource =
             ProgressiveMediaSource.Factory(dataSourceFactory)
 
@@ -123,7 +127,7 @@ class VideoDetailViewModel @Inject constructor(
 
         val mergeSource: MediaSource =
             MergingMediaSource(videoSource, audioSource)
-        player.setMediaSource(mergeSource)
+        player.setMediaSource(mergeSource, startPositionMs)
         player.prepare()
     }
 
@@ -171,7 +175,7 @@ class VideoDetailViewModel @Inject constructor(
                         VideoResolution(dashVideo.id, text, dashVideo.baseUrl)
                     }.distinctBy {
                         it.id
-                    }
+                    }.sortedByDescending { it.id }
 
 //                    val videoUrl = video.first().baseUrl
                     audioUrl = audio.first().baseUrl
@@ -244,10 +248,15 @@ class VideoDetailViewModel @Inject constructor(
             }
 
             is VideoDetailAction.UpdateVideoResolution -> {
-                play(action.newValue.url, audioUrl)
+
 
                 _uiState.update {
+
+
                     (it as VideoDetailState.Content).copy(currentVideoResolution = action.newValue)
+                        .apply {
+                            play(action.newValue.url, audioUrl, currentPosition)
+                        }
                 }
             }
         }

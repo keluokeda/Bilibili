@@ -3,10 +3,13 @@ package com.ke.bilibili.tv
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.MaterialTheme
 import com.ke.bilibili.tv.ui.LoginRoute
 import com.ke.bilibili.tv.ui.MainRoute
 import com.ke.bilibili.tv.ui.SplashRoute
@@ -24,7 +27,11 @@ class MainActivity : ComponentActivity() {
             BilibiliTheme {
                 val navController = rememberNavController()
 
-                NavHost(navController, startDestination = Screen.Splash) {
+                NavHost(
+                    navController, startDestination = Screen.Splash, modifier = Modifier.background(
+                        MaterialTheme.colorScheme.background
+                    )
+                ) {
 
                     composable<Screen.Splash> {
                         SplashRoute(toMain = {

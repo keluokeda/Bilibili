@@ -49,12 +49,15 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PlayCircleOutline
+import androidx.compose.material.icons.filled.RadioButtonChecked
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.filled.ThumbUpOffAlt
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -192,9 +195,13 @@ fun VideoDetailRoute(
                     Text(videoResolution.text)
                 }, leadingContent = {
                     if (videoResolution == pair.second) {
-                        Icon(Icons.Default.CheckBox, null, tint = MaterialTheme.colorScheme.primary)
+                        Icon(
+                            Icons.Default.RadioButtonChecked,
+                            null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     } else {
-                        Icon(Icons.Default.CheckBoxOutlineBlank, null)
+                        Icon(Icons.Default.RadioButtonUnchecked, null)
                     }
                 }, modifier = Modifier.clickable(enabled = videoResolution != pair.second) {
                     viewModel.handleAction(VideoDetailAction.UpdateVideoResolution(videoResolution))
@@ -310,7 +317,7 @@ private fun VideoDetailScreen(
                                         .clickable {
                                             showController(false)
                                         }
-                                        .padding(8.dp)
+//                                        .padding(8.dp)
                                 ) {
                                     Row(modifier = Modifier.fillMaxWidth()) {
                                         val dispatcher = LocalOnBackPressedDispatcherOwner.current
@@ -319,17 +326,20 @@ private fun VideoDetailScreen(
                                             dispatcher?.onBackPressedDispatcher?.onBackPressed()
                                         }) {
                                             Icon(
-                                                Icons.AutoMirrored.Filled.ArrowBack, null
+                                                Icons.AutoMirrored.Filled.ArrowBack,
+                                                null,
+                                                tint = Color.White
                                             )
                                         }
 
-                                        IconButton(onClick = {}) {
-                                            Icon(Icons.Default.Home, null)
-                                        }
+
 
                                         Spacer(modifier = Modifier.weight(1f))
 
-                                        TextButton(onClick = showVideoResolutionListDialog) {
+                                        TextButton(
+                                            onClick = showVideoResolutionListDialog,
+                                            colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
+                                        ) {
                                             Text(uiState.currentVideoResolution.text)
                                         }
 
@@ -352,7 +362,9 @@ private fun VideoDetailScreen(
                                         }) {
                                             Icon(
                                                 if (uiState.isPlaying) Icons.Default.Pause else
-                                                    Icons.Default.PlayArrow, null
+                                                    Icons.Default.PlayArrow,
+                                                null,
+                                                tint = Color.White
                                             )
                                         }
 
@@ -388,7 +400,7 @@ private fun VideoDetailScreen(
                                         }) {
                                             Icon(
                                                 if (uiState.isFullScreen) Icons.Default.FullscreenExit else Icons.Default.Fullscreen,
-                                                null
+                                                null, tint = Color.White
                                             )
                                         }
                                     }
@@ -581,7 +593,6 @@ private fun VideoInfoScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(8.dp)
 
                 ) {
 
@@ -636,10 +647,11 @@ private fun VideoInfoScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 16.dp)
                                     .clickable(onClick = {
                                         setExpanded(!uiState.expanded)
                                     })
+                                    .padding(horizontal = 16.dp)
+
                             ) {
                                 Text(
                                     uiState.info.view.title,
@@ -817,6 +829,8 @@ private fun RelatedVideoItem(item: VideoDetailResponse, onClick: () -> Unit) {
                 onClick()
             })
     ) {
+        HorizontalDivider(thickness = 1.dp)
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -884,7 +898,6 @@ private fun RelatedVideoItem(item: VideoDetailResponse, onClick: () -> Unit) {
                 }
             }
         }
-        HorizontalDivider(thickness = 1.dp)
     }
 }
 
