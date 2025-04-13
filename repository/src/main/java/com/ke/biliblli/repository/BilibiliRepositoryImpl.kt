@@ -4,6 +4,7 @@ import com.ke.biliblli.api.BilibiliApi
 import com.ke.biliblli.api.response.BaseResponse
 import com.ke.biliblli.api.response.CommentResponse
 import com.ke.biliblli.api.response.DynamicResponse
+import com.ke.biliblli.api.response.HistoryResponse
 import com.ke.biliblli.api.response.HomeRecommendListResponse
 import com.ke.biliblli.api.response.LaterWatchResponse
 import com.ke.biliblli.api.response.LoginInfoResponse
@@ -11,6 +12,7 @@ import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
 import com.ke.biliblli.api.response.VideoInfoResponse
 import com.ke.biliblli.api.response.VideoUrlResponse
+import com.ke.biliblli.api.response.VideoViewResponse
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.BilibiliStorage
 import com.ke.biliblli.common.entity.WbiParams
@@ -19,7 +21,6 @@ import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.util.TreeMap
-import java.util.stream.Collectors
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -81,6 +82,19 @@ class BilibiliRepositoryImpl @Inject constructor(
 
     override suspend fun homeRecommendVideos(index: Int): BaseResponse<HomeRecommendListResponse> {
         return bilibiliApi.homeRecommendVideoList(index, index)
+    }
+
+    override suspend fun videoView(bvid: String): BaseResponse<VideoViewResponse> {
+        return bilibiliApi.videoView(bvid)
+    }
+
+    override suspend fun history(
+        max: Long?,
+        business: String?,
+        at: Long?,
+        type: String?
+    ): BaseResponse<HistoryResponse> {
+        return bilibiliApi.history(max, business, at, type)
     }
 
     override suspend fun videoUrl(cid: Long, bvid: String): BaseResponse<VideoUrlResponse> {
@@ -195,15 +209,13 @@ object WbiUtil {
         val mixinKey = getMixinKey(imgKey, subKey)
 
 
-        val param = map.entries.stream()
-            .map<String> { it: MutableMap.MutableEntry<String, Any>? ->
-                String.format(
-                    "%s=%s",
-                    it!!.key,
-                    encodeURIComponent(it.value)
-                )
-            }
-            .collect(Collectors.joining("&"))
+        val param = map.entries.joinToString("&") { it ->
+            String.format(
+                "%s=%s",
+                it.key,
+                encodeURIComponent(it.value)
+            )
+        }
         val s = param + mixinKey
 
         return md5(s)

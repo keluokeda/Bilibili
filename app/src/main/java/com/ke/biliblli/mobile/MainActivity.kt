@@ -12,21 +12,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.ke.biliblli.api.BilibiliApi
 import com.ke.biliblli.common.Screen
 import com.ke.biliblli.mobile.ui.home.recommend.HomeRecommendVideoListRoute
 import com.ke.biliblli.mobile.ui.login.LoginRoute
 import com.ke.biliblli.mobile.ui.splash.SplashRoute
 import com.ke.biliblli.mobile.ui.theme.BilibiliTheme
 import com.ke.biliblli.mobile.ui.video.VideoDetailRoute
-import com.orhanobut.logger.Logger
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -118,8 +113,6 @@ class MainActivity : ComponentActivity() {
                     composable<Screen.VideoDetail> {
 
                         VideoDetailRoute {
-                            Logger.d("VideoDetailRoute $it")
-//                            System.currentTimeMillis()
                             navController.navigate(it)
                         }
 

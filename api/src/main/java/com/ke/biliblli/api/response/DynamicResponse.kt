@@ -65,7 +65,8 @@ data class DynamicItemModuleDynamicMajor(
     @JsonNames("live_rcmd")
     val live: DynamicItemModuleDynamicMajorLive? = null,
     val draw: DynamicItemModuleDynamicMajorDraw? = null,
-    val article: DynamicItemModuleDynamicMajorArticle? = null
+    val article: DynamicItemModuleDynamicMajorArticle? = null,
+    val pgc: DynamicItemModuleDynamicMajorPgc? = null
 )
 
 private val liveJson = Json {
@@ -122,4 +123,14 @@ data class DynamicItemModuleDynamicMajorArticle(
     val id: Long,
     val title: String,
     val desc: String
+)
+
+@Serializable
+data class DynamicItemModuleDynamicMajorPgc(
+    val cover: String,
+    val title: String,
+    val epid: Long,
+    @JsonNames("season_id")
+    val seasonId: Long,
+    val type: Int
 )

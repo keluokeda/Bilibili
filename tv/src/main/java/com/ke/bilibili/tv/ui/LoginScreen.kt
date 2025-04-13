@@ -1,6 +1,7 @@
 package com.ke.bilibili.tv.ui
 
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,18 +12,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ke.biliblli.viewmodel.LoginViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Button
 import androidx.tv.material3.OutlinedButton
 import androidx.tv.material3.Text
@@ -32,7 +34,8 @@ import com.ke.bilibili.tv.ui.theme.BilibiliTheme
 import com.ke.biliblli.viewmodel.LoginAction
 import com.ke.biliblli.viewmodel.LoginEvent
 import com.ke.biliblli.viewmodel.LoginState
-import com.lightspark.composeqr.QrCodeView
+import com.ke.biliblli.viewmodel.LoginViewModel
+import com.king.zxing.util.CodeUtils
 
 @Composable
 internal fun LoginRoute(
@@ -60,7 +63,7 @@ internal fun LoginRoute(
     })
 }
 
-private val qrSize = 240.dp
+private val qrSize = 480.dp
 private val buttonWidth = 150.dp
 
 @Composable
@@ -69,6 +72,7 @@ private fun LoginScreen(
     refresh: () -> Unit = {},
     login: () -> Unit = {}
 ) {
+
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
@@ -79,9 +83,11 @@ private fun LoginScreen(
                 } else if (state.url?.isEmpty() == true) {
                     Text(state.errorMessage)
                 } else {
-                    QrCodeView(
-                        data = state.url!!,
-                        modifier = Modifier.fillMaxSize()
+                    Image(
+                        bitmap =
+                            CodeUtils.createQRCode(state.url!!, qrSize.value.toInt())
+                                .asImageBitmap(),
+                        contentDescription = null, contentScale = ContentScale.Crop
                     )
                 }
             }

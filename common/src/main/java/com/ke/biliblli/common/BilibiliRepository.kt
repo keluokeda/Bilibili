@@ -3,6 +3,7 @@ package com.ke.biliblli.common
 import com.ke.biliblli.api.response.BaseResponse
 import com.ke.biliblli.api.response.CommentResponse
 import com.ke.biliblli.api.response.DynamicResponse
+import com.ke.biliblli.api.response.HistoryResponse
 import com.ke.biliblli.api.response.HomeRecommendListResponse
 import com.ke.biliblli.api.response.LaterWatchResponse
 import com.ke.biliblli.api.response.LoginInfoResponse
@@ -10,6 +11,7 @@ import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
 import com.ke.biliblli.api.response.VideoInfoResponse
 import com.ke.biliblli.api.response.VideoUrlResponse
+import com.ke.biliblli.api.response.VideoViewResponse
 
 interface BilibiliRepository {
 
@@ -20,6 +22,16 @@ interface BilibiliRepository {
         cid: Long, bvid: String
     ): BaseResponse<VideoUrlResponse>
 
+
+    suspend fun videoView(bvid: String): BaseResponse<VideoViewResponse>
+
+
+    suspend fun history(
+        max: Long?,
+        business: String?,
+        at: Long?,
+        type: String? = "archive"
+    ): BaseResponse<HistoryResponse>
 
     suspend fun loginQrCode(): BaseResponse<QrCodeResponse>
 

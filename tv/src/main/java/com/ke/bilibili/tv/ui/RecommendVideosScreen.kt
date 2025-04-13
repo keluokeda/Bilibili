@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
@@ -35,8 +36,6 @@ import androidx.tv.material3.Text
 import coil.compose.AsyncImage
 import com.ke.bilibili.tv.observeWithLifecycle
 import com.ke.bilibili.tv.ui.theme.BilibiliTheme
-import com.ke.bilibili.tv.viewmodel.MainEvent
-import com.ke.bilibili.tv.viewmodel.MainViewModel
 import com.ke.biliblli.api.response.HomeRecommendResponse
 import com.ke.biliblli.api.response.VideoOwner
 import com.ke.biliblli.api.response.VideoStatus
@@ -47,7 +46,7 @@ import com.ke.biliblli.viewmodel.HomeRecommendViewModel
 
 @Composable
 fun RecommendVideosRoute(
-    tabIndex: Int = 0,
+    state: LazyGridState,
     toDetail: (Screen.VideoDetail) -> Unit,
 ) {
     val viewModel = hiltViewModel<HomeRecommendViewModel>()
@@ -56,20 +55,15 @@ fun RecommendVideosRoute(
     val videos = viewModel.videoListFlow.collectAsLazyPagingItems()
 
 
-    val mainViewModel = hiltViewModel<MainViewModel>()
 
 
-    mainViewModel.event.observeWithLifecycle {
-        when (it) {
-            is MainEvent.Refresh -> {
-                if (it.index == tabIndex) {
-                    videos.refresh()
-                }
-            }
-        }
+    viewModel.event.observeWithLifecycle {
+        videos.refresh()
+        state.scrollToItem(0)
     }
 
     LazyVerticalGrid(
+        state = state,
         columns = GridCells.Fixed(4),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
@@ -81,7 +75,7 @@ fun RecommendVideosRoute(
 
             VideoItem(item, onClick = {
 //                onClick(item)
-                toDetail(Screen.VideoDetail(cid = item.cid, bvid = item.bvid, id = item.id))
+                toDetail(Screen.VideoDetail(bvid = item.bvid))
             })
         }
     }

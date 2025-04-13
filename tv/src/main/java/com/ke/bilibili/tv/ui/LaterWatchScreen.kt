@@ -8,19 +8,18 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ke.biliblli.viewmodel.LaterWatchViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Button
 import androidx.tv.material3.Text
-import com.ke.bilibili.tv.ui.VideoItem
 import com.ke.biliblli.common.Screen
 import com.ke.biliblli.common.entity.VideoViewEntity
 import com.ke.biliblli.viewmodel.LaterWatchState
+import com.ke.biliblli.viewmodel.LaterWatchViewModel
 
 
 @Composable
@@ -30,6 +29,8 @@ internal fun LaterWatchRoute(
     val viewModel = hiltViewModel<LaterWatchViewModel>()
 
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+
 
     LaterWatchScreen(state, {
         viewModel.handleAction(Unit)
@@ -72,7 +73,7 @@ private fun LaterWatchScreen(
                             it.owner.name
                         )
                         VideoItem(entity) {
-                            toDetail(Screen.VideoDetail(it.cid, it.bvid, it.aid))
+                            toDetail(Screen.VideoDetail(it.bvid))
                         }
                     }
                 }

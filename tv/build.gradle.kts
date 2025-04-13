@@ -15,10 +15,10 @@ android {
 
     defaultConfig {
         applicationId = "com.ke.bilibili.tv"
-        minSdk = 24
+        minSdk = 21
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.0.3"
+        versionCode = 7
+        versionName = "1.0.7"
 
 
     }
@@ -106,8 +106,9 @@ dependencies {
 
     implementation("io.github.2307vivek:seeker:1.2.2")
 
-    implementation("com.lightspark:compose-qr-code:1.0.1")
+//    implementation("com.lightspark:compose-qr-code:1.0.1")
 
+    implementation("com.github.jenly1314:zxing-lite:3.2.0")
 
     implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
     implementation("com.google.firebase:firebase-analytics")

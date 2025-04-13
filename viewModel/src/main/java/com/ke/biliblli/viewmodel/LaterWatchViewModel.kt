@@ -4,8 +4,11 @@ import androidx.lifecycle.viewModelScope
 import com.ke.biliblli.api.response.LaterWatchVideo
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.CrashHandler
+import com.ke.biliblli.common.event.MainTabChanged
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 import javax.inject.Inject
 
 @HiltViewModel
@@ -19,6 +22,21 @@ class LaterWatchViewModel @Inject constructor(
 
     init {
         refresh()
+        EventBus.getDefault().register(this)
+
+    }
+
+
+    @Subscribe
+    fun onTabChanged(event: MainTabChanged) {
+        if (event.index == 3) {
+            refresh()
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        EventBus.getDefault().unregister(this)
     }
 
 

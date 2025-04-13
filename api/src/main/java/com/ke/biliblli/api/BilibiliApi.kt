@@ -3,6 +3,7 @@ package com.ke.biliblli.api
 import com.ke.biliblli.api.response.BaseResponse
 import com.ke.biliblli.api.response.CommentResponse
 import com.ke.biliblli.api.response.DynamicResponse
+import com.ke.biliblli.api.response.HistoryResponse
 import com.ke.biliblli.api.response.HomeRecommendListResponse
 import com.ke.biliblli.api.response.LaterWatchResponse
 import com.ke.biliblli.api.response.LoginInfoResponse
@@ -11,6 +12,7 @@ import com.ke.biliblli.api.response.QrCodeResponse
 import com.ke.biliblli.api.response.VideoDetailResponse
 import com.ke.biliblli.api.response.VideoInfoResponse
 import com.ke.biliblli.api.response.VideoUrlResponse
+import com.ke.biliblli.api.response.VideoViewResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -101,8 +103,16 @@ interface BilibiliApi {
     ): BaseResponse<CommentResponse>
 
 
+    /**
+     * 播放历史
+     */
     @GET("x/web-interface/history/cursor")
-    suspend fun history()
+    suspend fun history(
+        @Query("max") max: Long?,
+        @Query("business") business: String?,
+        @Query("view_at") at: Long?,
+        @Query("type") type: String? = "archive"
+    ): BaseResponse<HistoryResponse>
 
     /**
      * 稍后再看
@@ -118,6 +128,10 @@ interface BilibiliApi {
         @Query("offset") offset: String? = null,
         @Query("type") type: String = "all"
     ): BaseResponse<DynamicResponse>
+
+
+    @GET("x/web-interface/view")
+    suspend fun videoView(@Query("bvid") bvid: String): BaseResponse<VideoViewResponse>
 
     companion object {
         const val baseUrl = "https://api.bilibili.com/"

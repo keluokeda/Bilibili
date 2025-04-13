@@ -50,11 +50,6 @@ val videoResolutionPairList = listOf<Pair<Int, String>>(
 )
 
 val audioResolutionPairList = listOf<Triple<Int, Int, String>>(
-//    30216 to "64K",
-//    30232 to "132K",
-//    30280 to "192K",
-//    30250 to "杜比全景声",
-//    30251 to "Hi-Res无损"
     Triple(0, 30216, "64K"),
     Triple(1, 30232, "132K"),
     Triple(2, 30280, "192K"),
@@ -73,6 +68,7 @@ class VideoDetailViewModel @Inject constructor(
     BaseViewModel<VideoDetailState, VideoDetailAction, VideoDetailEvent>(VideoDetailState.Loading) {
 
     private val params = savedStateHandle.toRoute<Screen.VideoDetail>()
+
 
     private val dataSourceFactory: DataSource.Factory =
         DefaultHttpDataSource.Factory()
@@ -184,6 +180,7 @@ class VideoDetailViewModel @Inject constructor(
 
         refresh()
 
+
         viewModelScope.launch {
             while (true) {
                 (uiState.value as? VideoDetailState.Content)?.copy(
@@ -208,7 +205,10 @@ class VideoDetailViewModel @Inject constructor(
             _uiState.value = VideoDetailState.Loading
 
             try {
-                val response = bilibiliRepository.videoUrl(params.cid, params.bvid).data!!
+                val view = bilibiliRepository.videoView(params.bvid).data!!
+
+                val response = bilibiliRepository.videoUrl(view.cid, view.bvid).data!!
+
 
 
 

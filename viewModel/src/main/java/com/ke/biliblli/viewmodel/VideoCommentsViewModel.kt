@@ -9,7 +9,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.ke.biliblli.api.BilibiliApi
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.Screen
 import com.ke.biliblli.db.dao.CommentDao
@@ -35,7 +34,7 @@ class VideoCommentsViewModel @Inject constructor(
     private val params = savedStateHandle.toRoute<Screen.VideoDetail>()
 
     private val commentsRemoteMediator =
-        CommentsRemoteMediator(bilibiliRepository, params.id, 1, commentDao, initialSortType.type)
+        CommentsRemoteMediator(bilibiliRepository, 1, 1, commentDao, initialSortType.type)
 
     private val _sort = MutableStateFlow(initialSortType)
 
@@ -54,7 +53,7 @@ class VideoCommentsViewModel @Inject constructor(
         ),
         remoteMediator = commentsRemoteMediator
     ) {
-        commentDao.getComments(params.id, 1)
+        commentDao.getComments(1, 1)
     }.flow.cachedIn(viewModelScope)
 
     fun toggleSort() {

@@ -11,7 +11,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        minSdk = 24
+        minSdk = 21
 
         ndk {
             abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
@@ -63,5 +63,7 @@ dependencies {
     implementation("com.github.franmontiel:PersistentCookieJar:v1.0.1")
 
 //    api("com.tencent.bugly:crashreport:latest.releas")
+
+    api("org.greenrobot:eventbus:3.3.1")
 
 }
