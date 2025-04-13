@@ -1,13 +1,5 @@
 package com.ke.biliblli.common
 
-import okio.ByteString.Companion.encodeUtf8
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
-import java.util.TreeMap
-import java.util.stream.Collectors
-
 
 fun Long.format(): String {
     return when (this) {
@@ -27,5 +19,9 @@ fun Long.duration(): String {
     val minute = this / 60
 
     return "${minute}:$second"
+}
+
+object CrashHandler {
+    var handler: (Exception) -> Unit = {}
 }
 

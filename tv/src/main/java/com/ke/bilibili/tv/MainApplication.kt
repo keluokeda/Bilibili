@@ -8,6 +8,9 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import com.google.firebase.crashlytics.ktx.crashlytics
+import com.google.firebase.ktx.Firebase
+import com.ke.biliblli.common.CrashHandler
 import com.orhanobut.logger.AndroidLogAdapter
 import com.orhanobut.logger.Logger
 import dagger.hilt.android.HiltAndroidApp
@@ -19,6 +22,11 @@ class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         Logger.addLogAdapter(AndroidLogAdapter())
+
+        CrashHandler.handler = {
+            it.printStackTrace()
+            Firebase.crashlytics.recordException(it)
+        }
     }
 }
 

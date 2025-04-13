@@ -2,6 +2,7 @@ package com.ke.biliblli.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.ke.biliblli.common.BilibiliRepository
+import com.ke.biliblli.common.CrashHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -34,6 +35,7 @@ class LoginViewModel @Inject constructor(
                     _event.send(LoginEvent.ShowToast(response.message))
                 }
             } catch (e: Exception) {
+                CrashHandler.handler(e)
                 _event.send(LoginEvent.ShowToast("网络故障"))
             }
         }
@@ -72,6 +74,7 @@ class LoginViewModel @Inject constructor(
 
 
             } catch (e: Exception) {
+                CrashHandler.handler(e)
                 _uiState.value = LoginState("", false, "错误")
             }
         }

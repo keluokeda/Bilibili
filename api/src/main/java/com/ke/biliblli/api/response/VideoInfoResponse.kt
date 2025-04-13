@@ -50,8 +50,8 @@ data class UpInfoCard(
     val friend: Long,
     val attention: Long,
     val sign: String,
-    @JsonNames("level_info")
-    val levelInfo: UserLevelInfo,
+//    @JsonNames("level_info")
+//    val levelInfo: UserLevelInfo,
     val pendant: AvatarPendant,
     val nameplate: Nameplate
 )

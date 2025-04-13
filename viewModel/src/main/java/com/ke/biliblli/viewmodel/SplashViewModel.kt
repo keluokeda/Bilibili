@@ -2,6 +2,7 @@ package com.ke.biliblli.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.ke.biliblli.common.BilibiliRepository
+import com.ke.biliblli.common.CrashHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -33,7 +34,8 @@ class SplashViewModel @Inject constructor(
                     _event.send(SplashEvent.ToLogin)
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+//                e.printStackTrace()
+                CrashHandler.handler(e)
                 _uiState.value = SplashState.Error
             }
         }

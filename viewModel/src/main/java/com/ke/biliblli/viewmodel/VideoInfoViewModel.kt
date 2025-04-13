@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.ke.biliblli.api.response.VideoInfoResponse
 import com.ke.biliblli.common.BilibiliRepository
+import com.ke.biliblli.common.CrashHandler
 import com.ke.biliblli.common.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
@@ -56,7 +57,8 @@ class VideoInfoViewModel @Inject constructor(
                 val data = bilibiliRepository.videoInfo(params.bvid).data
                 _uiState.value = VideoInfoState.Success(data!!, false)
             } catch (e: Exception) {
-                e.printStackTrace()
+//                e.printStackTrace()
+                CrashHandler.handler(e)
                 _uiState.value = VideoInfoState.Error
             }
         }

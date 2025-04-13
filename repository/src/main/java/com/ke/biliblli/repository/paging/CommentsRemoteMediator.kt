@@ -5,6 +5,7 @@ import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import com.ke.biliblli.common.BilibiliRepository
+import com.ke.biliblli.common.CrashHandler
 import com.ke.biliblli.db.dao.CommentDao
 import com.ke.biliblli.db.entity.CommentEntity
 
@@ -69,7 +70,8 @@ class CommentsRemoteMediator(
                     list.isEmpty()
             )
         } catch (e: Exception) {
-            e.printStackTrace()
+//            e.printStackTrace()
+            CrashHandler.handler(e)
             return MediatorResult.Error(e)
         }
     }

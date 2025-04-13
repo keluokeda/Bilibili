@@ -1,5 +1,6 @@
 package com.ke.bilibili.tv.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,12 +10,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.tv.material3.Button
@@ -24,8 +30,9 @@ import androidx.tv.material3.Text
 import com.ke.bilibili.tv.viewmodel.MainAction
 import com.ke.bilibili.tv.viewmodel.MainViewModel
 import com.ke.biliblli.common.Screen
+import com.orhanobut.logger.Logger
 
-private val tabs = listOf("推荐", "热门", "排行", "稍后再看")
+private val tabs = listOf("推荐", "热门", "排行", "动态", "稍后再看")
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -33,6 +40,18 @@ fun MainRoute(toVideoDetail: (Screen.VideoDetail) -> Unit) {
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
 
     val mainViewModel = hiltViewModel<MainViewModel>()
+
+    val focusRequester = remember { FocusRequester() }
+
+    var hasFocus by remember {
+        mutableStateOf(false)
+    }
+
+
+    BackHandler(enabled = !hasFocus) {
+        focusRequester.requestFocus()
+    }
+
 
     Column(
         modifier = Modifier
@@ -45,6 +64,12 @@ fun MainRoute(toVideoDetail: (Screen.VideoDetail) -> Unit) {
             modifier = Modifier
                 .padding(16.dp)
                 .focusRestorer()
+                .onFocusChanged {
+                    Logger.d("${it.isFocused} ${it.hasFocus} ${it.isCaptured}")
+                    hasFocus = it.hasFocus
+                }
+                .focusRequester(focusRequester)
+//                .focusable(true, interactionSource)
         ) {
             tabs.forEachIndexed { index, tab ->
                 key(index) {
@@ -100,6 +125,8 @@ fun MainRoute(toVideoDetail: (Screen.VideoDetail) -> Unit) {
                 }
 
             } else if (selectedIndex == 3) {
+                DynamicRoute()
+            } else if (selectedIndex == 4) {
                 LaterWatchRoute(toVideoDetail)
             }
         }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1055925092379",
+    "project_id": "bilibili-1de1d",
+    "storage_bucket": "bilibili-1de1d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1055925092379:android:06b96ac31c03caeb3db8be",
+        "android_client_info": {
+          "package_name": "com.ke.bilibili.tv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjMbAv5PO1swNGtJExDi4DSfYuV-bU95M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

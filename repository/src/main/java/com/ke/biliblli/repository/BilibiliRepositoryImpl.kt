@@ -3,12 +3,12 @@ package com.ke.biliblli.repository
 import com.ke.biliblli.api.BilibiliApi
 import com.ke.biliblli.api.response.BaseResponse
 import com.ke.biliblli.api.response.CommentResponse
+import com.ke.biliblli.api.response.DynamicResponse
 import com.ke.biliblli.api.response.HomeRecommendListResponse
 import com.ke.biliblli.api.response.LaterWatchResponse
 import com.ke.biliblli.api.response.LoginInfoResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
-import com.ke.biliblli.api.response.VideoDetailResponse
 import com.ke.biliblli.api.response.VideoInfoResponse
 import com.ke.biliblli.api.response.VideoUrlResponse
 import com.ke.biliblli.common.BilibiliRepository
@@ -41,6 +41,11 @@ class BilibiliRepositoryImpl @Inject constructor(
         sort: Int
     ): BaseResponse<CommentResponse> {
         return bilibiliApi.comments(oid, index, type, sort)
+    }
+
+
+    override suspend fun dynamicList(offset: String?, type: String): BaseResponse<DynamicResponse> {
+        return bilibiliApi.dynamicList(offset, type)
     }
 
     override suspend fun videoInfo(bvid: String): BaseResponse<VideoInfoResponse> {

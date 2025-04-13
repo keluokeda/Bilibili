@@ -3,9 +3,9 @@ package com.ke.biliblli.viewmodel
 import androidx.lifecycle.viewModelScope
 import com.ke.biliblli.api.response.LaterWatchVideo
 import com.ke.biliblli.common.BilibiliRepository
+import com.ke.biliblli.common.CrashHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,7 +29,8 @@ class LaterWatchViewModel @Inject constructor(
                 _uiState.value =
                     LaterWatchState.Success(list = bilibiliRepository.laterWatchList().data!!.list)
             } catch (e: Exception) {
-                e.printStackTrace()
+//                e.printStackTrace()
+                CrashHandler.handler(e)
                 _uiState.value = LaterWatchState.Error
             }
         }

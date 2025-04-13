@@ -5,6 +5,8 @@ plugins {
     kotlin("plugin.serialization") version "2.0.21"
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 android {
@@ -15,8 +17,9 @@ android {
         applicationId = "com.ke.bilibili.tv"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.0.3"
+
 
     }
 
@@ -104,4 +107,9 @@ dependencies {
     implementation("io.github.2307vivek:seeker:1.2.2")
 
     implementation("com.lightspark:compose-qr-code:1.0.1")
+
+
+    implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-crashlytics")
 }

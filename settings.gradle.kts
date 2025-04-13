@@ -9,6 +9,8 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
+        maven { url = uri("https://tencent-tds-maven.pkg.coding.net/repository/shiply/repo/") }
+
     }
 }
 dependencyResolutionManagement {
@@ -17,6 +19,8 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
+
+        maven { url = uri("https://tencent-tds-maven.pkg.coding.net/repository/shiply/repo/") }
 
     }
 }

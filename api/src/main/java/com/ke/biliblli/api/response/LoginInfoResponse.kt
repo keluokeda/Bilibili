@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package com.ke.biliblli.api.response
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 
@@ -9,8 +12,8 @@ data class LoginInfoResponse(
     @JsonNames("email_verified")
     val emailVerified: Int? = null,
     val face: String? = null,
-    @JsonNames("level_info")
-    val levelInfo: UserLevelInfo? = null,
+//    @JsonNames("level_info")
+//    val levelInfo: UserLevelInfo? = null,
     val mid: Long? = null,
     @JsonNames("mobile_verified")
     val mobileVerified: Int? = null,
@@ -46,17 +49,17 @@ data class LoginInfoResponse(
     val json: WbiImage
 )
 
-@Serializable
-data class UserLevelInfo(
-    @JsonNames("current_level")
-    val currentLevel: Int,
-    @JsonNames("current_min")
-    val currentMin: Int,
-    @JsonNames("current_exp")
-    val currentExp: Int,
-    @JsonNames("next_exp")
-    val nextExp: Int
-)
+//@Serializable
+//data class UserLevelInfo(
+//    @JsonNames("current_level")
+//    val currentLevel: Int,
+//    @JsonNames("current_min")
+//    val currentMin: Int,
+//    @JsonNames("current_exp")
+//    val currentExp: Int,
+//    @JsonNames("next_exp")
+//    val nextExp: Int
+//)
 
 @Serializable
 data class UserOfficial(
@@ -80,12 +83,12 @@ data class AvatarPendant(
     val expire: Long
 )
 
-@Serializable
-data class VipLabel(
-    val path: String,
-    val text: String,
-    @JsonNames("label_theme")
-    val labelTheme: String,
-    @JsonNames("text_color")
-    val textColor: String
-)
+//@Serializable
+//data class VipLabel(
+//    val path: String,
+//    val text: String,
+//    @JsonNames("label_theme")
+//    val labelTheme: String,
+//    @JsonNames("text_color")
+//    val textColor: String
+//)

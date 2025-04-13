@@ -19,8 +19,9 @@ import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.navigation.toRoute
 import com.ke.biliblli.common.BilibiliRepository
+import com.ke.biliblli.common.CrashHandler
 import com.ke.biliblli.common.Screen
-import com.ke.biliblli.viewmodel.VideoDetailEvent.*
+import com.ke.biliblli.viewmodel.VideoDetailEvent.ShowVideoResolutionListDialog
 import com.orhanobut.logger.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -255,7 +256,8 @@ class VideoDetailViewModel @Inject constructor(
                 }
 
             } catch (e: Exception) {
-                e.printStackTrace()
+//                e.printStackTrace()
+                CrashHandler.handler(e)
                 _uiState.value = VideoDetailState.Error
             }
         }

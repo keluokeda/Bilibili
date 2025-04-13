@@ -2,6 +2,7 @@ package com.ke.biliblli.api
 
 import com.ke.biliblli.api.response.BaseResponse
 import com.ke.biliblli.api.response.CommentResponse
+import com.ke.biliblli.api.response.DynamicResponse
 import com.ke.biliblli.api.response.HomeRecommendListResponse
 import com.ke.biliblli.api.response.LaterWatchResponse
 import com.ke.biliblli.api.response.LoginInfoResponse
@@ -108,6 +109,15 @@ interface BilibiliApi {
      */
     @GET("x/v2/history/toview")
     suspend fun laterWatch(): BaseResponse<LaterWatchResponse>
+
+    /**
+     * 全部动态
+     */
+    @GET("x/polymer/web-dynamic/v1/feed/all")
+    suspend fun dynamicList(
+        @Query("offset") offset: String? = null,
+        @Query("type") type: String = "all"
+    ): BaseResponse<DynamicResponse>
 
     companion object {
         const val baseUrl = "https://api.bilibili.com/"

@@ -13,6 +13,10 @@ android {
     defaultConfig {
         minSdk = 24
 
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+        }
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -57,5 +61,7 @@ dependencies {
     kapt(libs.hilt.android.compiler)
 
     implementation("com.github.franmontiel:PersistentCookieJar:v1.0.1")
+
+//    api("com.tencent.bugly:crashreport:latest.releas")
 
 }
