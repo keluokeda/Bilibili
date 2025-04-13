@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.ke.bilibili.tv" />
+                  <option name="mobileSdkAppId" value="1:1055925092379:android:06b96ac31c03caeb3db8be" />
+                  <option name="projectId" value="bilibili-1de1d" />
+                  <option name="projectNumber" value="1055925092379" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
