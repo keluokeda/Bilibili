@@ -68,7 +68,7 @@ internal fun VideoDetailRoute() {
                     id = it.item.id.toString(),
 //                    color = it.item.color,
                     color = Color.Black.value.toInt(),
-                    fontSize = 18,
+                    fontSize = it.item.fontSize,
                     content = it.item.content
                 )
                 sender?.invoke(item)

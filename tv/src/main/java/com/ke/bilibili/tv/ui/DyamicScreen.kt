@@ -59,6 +59,7 @@ import com.ke.biliblli.viewmodel.DynamicAction
 import com.ke.biliblli.viewmodel.DynamicState
 import com.ke.biliblli.viewmodel.DynamicViewModel
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 
 @Composable
@@ -243,7 +244,7 @@ private fun DynamicContent(
     if (item.module.dynamic.major?.archive != null) {
         val archive = item.module.dynamic.major!!.archive!!
         DynamicVideoCard(archive)
-        LaunchedEffect(Unit) {
+        LaunchedEffect(UUID.randomUUID()) {
             paramsCallback?.invoke(Screen.VideoDetail(archive.bvid))
         }
     } else if (item.module.dynamic.major?.live != null) {

@@ -1,7 +1,7 @@
 package com.ke.bilibili.tv.ui.component
 
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.offset
@@ -17,6 +17,7 @@ import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Text
 import kotlinx.serialization.Serializable
@@ -56,8 +57,8 @@ fun DanmakuView(
             var move by remember(danmakuItem.id) { mutableStateOf(false) }
 
 
-            val percent by animateIntAsState(
-                targetValue = if (move) 0 else 100, animationSpec = tween(
+            val percent by animateFloatAsState(
+                targetValue = if (move) 0f else 1f, animationSpec = tween(
                     durationMillis = danmakuItem.duration.toInt(),
                     easing = LinearEasing
                 ), label = danmakuItem.id
@@ -65,35 +66,53 @@ fun DanmakuView(
 
 
 
-            if (percent == 0) {
+            if (percent == 0f) {
                 item.percent = 0
             }
 
+            var fullWidth by remember {
+                mutableStateOf(0.dp)
+            }
 
 
             if (item.percent != 0) {
 
+                if (fullWidth == 0.dp) {
+                    MeasureUnconstrainedViewWidth(
+                        viewToMeasure = {
+                            Text(
+                                danmakuItem.content,
+                                style = TextStyle(
+                                    fontSize = danmakuItem.fontSize.sp,
+                                    color = Color.White
+//                                    Color(danmakuItem.color)
+                                ), maxLines = 1
+                            )
+                        }
+                    ) {
+                        val fullWidth = it + maxWidth
 
-                MeasureUnconstrainedViewWidth(
-                    viewToMeasure = {
+                        val xOffset = maxWidth - fullWidth * (1f - percent)
+
+                        LaunchedEffect(danmakuItem.id) {
+                            move = true
+                        }
+
+
                         Text(
                             danmakuItem.content,
+                            modifier = Modifier.offset(
+                                x = xOffset, y = maxHeight * (danmakuItem.startY / 100f)
+                            ),
                             style = TextStyle(
                                 fontSize = danmakuItem.fontSize.sp,
                                 color = Color.White
-//                                    Color(danmakuItem.color)
+//                                Color(danmakuItem.color)
                             ), maxLines = 1
                         )
                     }
-                ) {
-                    val fullWidth = it + maxWidth
-
-                    val xOffset = maxWidth - fullWidth * (1f - percent / 100f)
-
-                    LaunchedEffect(danmakuItem.id) {
-                        move = true
-                    }
-
+                } else {
+                    val xOffset = maxWidth - fullWidth * (1f - percent)
 
                     Text(
                         danmakuItem.content,
@@ -107,6 +126,8 @@ fun DanmakuView(
                         ), maxLines = 1
                     )
                 }
+
+
             }
 
         }
