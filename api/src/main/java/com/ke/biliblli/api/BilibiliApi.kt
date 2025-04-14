@@ -3,6 +3,7 @@ package com.ke.biliblli.api
 import com.ke.biliblli.api.response.BaseResponse
 import com.ke.biliblli.api.response.CommentResponse
 import com.ke.biliblli.api.response.DynamicResponse
+import com.ke.biliblli.api.response.DynamicUpListResponse
 import com.ke.biliblli.api.response.HistoryResponse
 import com.ke.biliblli.api.response.HomeRecommendListResponse
 import com.ke.biliblli.api.response.LaterWatchResponse
@@ -126,12 +127,19 @@ interface BilibiliApi {
     @GET("x/polymer/web-dynamic/v1/feed/all")
     suspend fun dynamicList(
         @Query("offset") offset: String? = null,
-        @Query("type") type: String = "all"
+        @Query("type") type: String = "all",
+        @Query("host_mid") mid: Long? = null
     ): BaseResponse<DynamicResponse>
 
 
     @GET("x/web-interface/view")
     suspend fun videoView(@Query("bvid") bvid: String): BaseResponse<VideoViewResponse>
+
+    /**
+     * 更新了动态的up主
+     */
+    @GET("x/polymer/web-dynamic/v1/portal?up_list_more=1&web_location=333.1365")
+    suspend fun updateDynamicUpList(): BaseResponse<DynamicUpListResponse>
 
     companion object {
         const val baseUrl = "https://api.bilibili.com/"

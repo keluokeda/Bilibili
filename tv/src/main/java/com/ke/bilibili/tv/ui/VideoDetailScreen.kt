@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -38,11 +40,14 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.FilterChip
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import com.ke.bilibili.tv.observeWithLifecycle
+import com.ke.bilibili.tv.ui.component.DanmakuItem
+import com.ke.bilibili.tv.ui.component.DanmakuView
 import com.ke.biliblli.viewmodel.AudioResolution
 import com.ke.biliblli.viewmodel.VideoDetailAction
+import com.ke.biliblli.viewmodel.VideoDetailEvent
 import com.ke.biliblli.viewmodel.VideoDetailState
 import com.ke.biliblli.viewmodel.VideoDetailViewModel
-import com.ke.biliblli.viewmodel.VideoInfoViewModel
 import com.ke.biliblli.viewmodel.VideoResolution
 import com.orhanobut.logger.Logger
 
@@ -51,7 +56,29 @@ import com.orhanobut.logger.Logger
 internal fun VideoDetailRoute() {
     val viewModel = hiltViewModel<VideoDetailViewModel>()
 
-    val videoInfoViewModel = hiltViewModel<VideoInfoViewModel>()
+
+    var sender by remember {
+        mutableStateOf<((DanmakuItem) -> Unit)?>(null)
+    }
+
+    viewModel.event.observeWithLifecycle {
+        when (it) {
+            is VideoDetailEvent.ShootDanmaku -> {
+                val item = DanmakuItem(
+                    id = it.item.id.toString(),
+//                    color = it.item.color,
+                    color = Color.Black.value.toInt(),
+                    fontSize = 18,
+                    content = it.item.content
+                )
+                sender?.invoke(item)
+            }
+
+            is VideoDetailEvent.ShowVideoResolutionListDialog -> {
+
+            }
+        }
+    }
 
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -68,7 +95,9 @@ internal fun VideoDetailRoute() {
         }, {
             viewModel.handleAction(VideoDetailAction.UpdateAudioResolution(it))
         }
-    )
+    ) {
+        sender = it
+    }
 
 
 }
@@ -81,6 +110,7 @@ private fun VideoDetailScreen(
     setControllerVisible: (Boolean) -> Unit,
     updateVideoResolution: (VideoResolution) -> Unit,
     updateAudioResolution: (AudioResolution) -> Unit,
+    receiver: ((DanmakuItem) -> Unit) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         when (uiState) {
@@ -125,6 +155,12 @@ private fun VideoDetailScreen(
                             .background(Color.Black)
 
                     )
+
+                    DanmakuView(modifier = Modifier.fillMaxSize()) {
+                        receiver(it)
+                    }
+
+
 
                     if (uiState.playbackState == Player.STATE_BUFFERING) {
                         Text("加载中")

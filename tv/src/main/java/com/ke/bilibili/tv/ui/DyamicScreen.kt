@@ -4,17 +4,24 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AllOut
+import androidx.compose.material.icons.filled.Circle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,7 +42,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.tv.material3.Card
 import androidx.tv.material3.ExperimentalTvMaterial3Api
-import androidx.tv.material3.FilterChip
+import androidx.tv.material3.Icon
 import androidx.tv.material3.ListItem
 import androidx.tv.material3.Text
 import coil.compose.AsyncImage
@@ -46,8 +53,10 @@ import com.ke.biliblli.api.response.DynamicItemModule
 import com.ke.biliblli.api.response.DynamicItemModuleAuthor
 import com.ke.biliblli.api.response.DynamicItemModuleDynamic
 import com.ke.biliblli.api.response.DynamicItemModuleDynamicMajorArchive
+import com.ke.biliblli.api.response.DynamicUpItem
 import com.ke.biliblli.common.Screen
-import com.ke.biliblli.viewmodel.DynamicType
+import com.ke.biliblli.viewmodel.DynamicAction
+import com.ke.biliblli.viewmodel.DynamicState
 import com.ke.biliblli.viewmodel.DynamicViewModel
 import kotlinx.coroutines.launch
 
@@ -58,18 +67,17 @@ internal fun DynamicRoute(
     navigate: (Any) -> Unit
 ) {
     val viewModel = hiltViewModel<DynamicViewModel>()
-    val scope = rememberCoroutineScope()
     val list = viewModel.dynamicListFlow.collectAsLazyPagingItems()
-    val currentType by viewModel.currentType.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
     viewModel.event.observeWithLifecycle {
         list.refresh()
         state.scrollToItem(0)
-
     }
-    DynamicScreen(list, state, currentType, navigate) {
-        viewModel.updateType(it)
-        list.refresh()
+    DynamicScreen(uiState, list, state, navigate) {
+        viewModel.handleAction(DynamicAction.SelectedUp(it))
         scope.launch {
+            list.refresh()
             state.scrollToItem(0)
         }
     }
@@ -78,30 +86,70 @@ internal fun DynamicRoute(
 @OptIn(ExperimentalTvMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 private fun DynamicScreen(
+    uiState: DynamicState,
     list: LazyPagingItems<DynamicItem>,
     state: LazyStaggeredGridState,
-    currentType: DynamicType,
     navigate: (Any) -> Unit,
-    setType: (DynamicType) -> Unit
+    updateCurrentUp: (DynamicUpItem?) -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
+    Row(modifier = Modifier.fillMaxSize()) {
 
-        FlowRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    16.dp
-                ), horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            DynamicType.entries.forEach {
-                FilterChip(selected = it == currentType, onClick = {
-                    setType(it)
-                }) {
-                    Text(it.displayName)
+
+        if (uiState.upList.isNotEmpty()) {
+            LazyColumn(
+                modifier = Modifier
+                    .width(180.dp)
+                    .fillMaxHeight()
+            ) {
+                items(uiState.upList) {
+                    ListItem(selected = it == uiState.current, onClick = {
+                        updateCurrentUp(it)
+                    }, headlineContent = {
+                        Text(it?.uname ?: "全部动态", maxLines = 1)
+                    }, leadingContent = {
+                        val size = 32.dp
+                        if (it == null) {
+                            Icon(Icons.Default.AllOut, null, modifier = Modifier.size(size))
+                        } else {
+                            AsyncImage(
+                                model = it.face,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(size)
+                                    .clip(CircleShape)
+                            )
+                        }
+                    }, trailingContent = {
+                        if (it?.hasUpdate == true) {
+                            Icon(
+                                Icons.Default.Circle,
+                                null,
+                                modifier = Modifier.size(4.dp),
+                                tint = Color.Red
+                            )
+                        }
+                    })
                 }
             }
-
         }
+
+//        FlowRow(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(
+//                    16.dp
+//                ), horizontalArrangement = Arrangement.spacedBy(8.dp)
+//        ) {
+//            DynamicType.entries.forEach {
+//                FilterChip(selected = it == currentType, onClick = {
+//                    setType(it)
+//                }) {
+//                    Text(it.displayName)
+//                }
+//            }
+//
+//        }
 
         LazyVerticalStaggeredGrid(
             columns = StaggeredGridCells.Fixed(3),
@@ -109,7 +157,7 @@ private fun DynamicScreen(
             verticalItemSpacing = 16.dp,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxHeight()
                 .weight(1f),
             state = state
         ) {
@@ -257,9 +305,13 @@ private fun DynamicVideoCard(archive: DynamicItemModuleDynamicMajorArchive) {
             contentDescription = null,
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentHeight()
+                .aspectRatio(16 / 9f)
         )
-        Text(archive.title, modifier = Modifier.padding(vertical = 4.dp, horizontal = 12.dp))
+        Text(
+            archive.title + "\n",
+            modifier = Modifier.padding(vertical = 4.dp, horizontal = 12.dp),
+            maxLines = 2
+        )
     }
 }
 

@@ -4,6 +4,7 @@ import com.ke.biliblli.api.BilibiliApi
 import com.ke.biliblli.api.response.BaseResponse
 import com.ke.biliblli.api.response.CommentResponse
 import com.ke.biliblli.api.response.DynamicResponse
+import com.ke.biliblli.api.response.DynamicUpListResponse
 import com.ke.biliblli.api.response.HistoryResponse
 import com.ke.biliblli.api.response.HomeRecommendListResponse
 import com.ke.biliblli.api.response.LaterWatchResponse
@@ -16,6 +17,7 @@ import com.ke.biliblli.api.response.VideoViewResponse
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.BilibiliStorage
 import com.ke.biliblli.common.entity.WbiParams
+import com.ke.biliblli.common.http.BilibiliProtoApi
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
@@ -27,9 +29,11 @@ import javax.inject.Singleton
 @Singleton
 class BilibiliRepositoryImpl @Inject constructor(
     private val bilibiliApi: BilibiliApi,
+    override val bilibiliProtoApi: BilibiliProtoApi,
     private val bilibiliStorage: BilibiliStorage
 ) :
     BilibiliRepository {
+
 
     override suspend fun laterWatchList(): BaseResponse<LaterWatchResponse> {
         return bilibiliApi.laterWatch()
@@ -45,8 +49,20 @@ class BilibiliRepositoryImpl @Inject constructor(
     }
 
 
-    override suspend fun dynamicList(offset: String?, type: String): BaseResponse<DynamicResponse> {
-        return bilibiliApi.dynamicList(offset, type)
+    override suspend fun updateDynamicUpList(): BaseResponse<DynamicUpListResponse> {
+        return bilibiliApi.updateDynamicUpList()
+    }
+
+//    override suspend fun dm(type: Int, oid: Long, index: Int): DmSegSDKReply {
+//        return bilibiliProtoApi.dm(type, oid, index)
+//    }
+
+    override suspend fun dynamicList(
+        offset: String?,
+        type: String,
+        mid: Long?
+    ): BaseResponse<DynamicResponse> {
+        return bilibiliApi.dynamicList(offset, type, mid)
     }
 
     override suspend fun videoInfo(bvid: String): BaseResponse<VideoInfoResponse> {

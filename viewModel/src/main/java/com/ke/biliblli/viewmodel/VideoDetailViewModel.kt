@@ -21,6 +21,7 @@ import androidx.navigation.toRoute
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.CrashHandler
 import com.ke.biliblli.common.Screen
+import com.ke.biliblli.common.entity.BilibiliDanmaku
 import com.ke.biliblli.viewmodel.VideoDetailEvent.ShowVideoResolutionListDialog
 import com.orhanobut.logger.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -136,6 +137,29 @@ class VideoDetailViewModel @Inject constructor(
 
     }
 
+    private fun loadDanmakuList(id: Long) {
+        viewModelScope.launch {
+            try {
+                val danmakuList = bilibiliRepository.danmakuList(1, id, 1)
+                danmakuList.forEach {
+                    shootDanmaku(it)
+                }
+            } catch (e: Exception) {
+                CrashHandler.handler(e)
+
+            }
+
+        }
+
+    }
+
+    private fun shootDanmaku(danmaku: BilibiliDanmaku) {
+        viewModelScope.launch {
+            delay(danmaku.progress.toLong())
+            _event.send(VideoDetailEvent.ShootDanmaku(danmaku))
+        }
+    }
+
     private val renderersFactory =
         DefaultRenderersFactory(context).forceEnableMediaCodecAsynchronousQueueing()
 
@@ -207,8 +231,11 @@ class VideoDetailViewModel @Inject constructor(
             try {
                 val view = bilibiliRepository.videoView(params.bvid).data!!
 
+
                 val response = bilibiliRepository.videoUrl(view.cid, view.bvid).data!!
 
+
+                loadDanmakuList(view.cid)
 
 
 
@@ -427,4 +454,6 @@ sealed interface VideoDetailEvent {
         val list: List<VideoResolution>,
         val current: VideoResolution
     ) : VideoDetailEvent
+
+    data class ShootDanmaku(val item: BilibiliDanmaku) : VideoDetailEvent
 }
