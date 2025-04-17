@@ -7,5 +7,6 @@ import kotlinx.serialization.Serializable
 data class VideoViewResponse(
     val bvid: String,
     val cid: Long,
+    val aid: Long,
     val pic: String
 )

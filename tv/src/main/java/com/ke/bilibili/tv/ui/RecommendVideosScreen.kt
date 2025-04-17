@@ -47,7 +47,7 @@ import com.ke.biliblli.viewmodel.HomeRecommendViewModel
 @Composable
 fun RecommendVideosRoute(
     state: LazyGridState,
-    toDetail: (Screen.VideoDetail) -> Unit,
+    navigate: (Any) -> Unit,
 ) {
     val viewModel = hiltViewModel<HomeRecommendViewModel>()
 
@@ -73,19 +73,20 @@ fun RecommendVideosRoute(
             val item = videos[it]!!
 
 
-            VideoItem(item, onClick = {
-//                onClick(item)
-                toDetail(Screen.VideoDetail(bvid = item.bvid))
-            })
+            VideoItem(item, navigate = navigate)
         }
     }
 }
 
 
 @Composable
-private fun VideoItem(item: HomeRecommendResponse, onClick: () -> Unit = {}) {
+private fun VideoItem(item: HomeRecommendResponse, navigate: (Any) -> Unit = {}) {
 
-    Card(onClick = onClick) {
+    Card(onClick = {
+        navigate(Screen.VideoDetail(item.bvid))
+    }, onLongClick = {
+        navigate(Screen.Convert(item.bvid))
+    }) {
 
         Box(
             modifier = Modifier

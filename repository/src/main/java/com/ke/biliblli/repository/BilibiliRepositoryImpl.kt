@@ -1,6 +1,8 @@
 package com.ke.biliblli.repository
 
+import android.util.Base64
 import com.ke.biliblli.api.BilibiliApi
+import com.ke.biliblli.api.BilibiliHtmlApi
 import com.ke.biliblli.api.response.BaseResponse
 import com.ke.biliblli.api.response.CommentResponse
 import com.ke.biliblli.api.response.DynamicResponse
@@ -11,6 +13,10 @@ import com.ke.biliblli.api.response.LaterWatchResponse
 import com.ke.biliblli.api.response.LoginInfoResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
+import com.ke.biliblli.api.response.RelationStatusResponse
+import com.ke.biliblli.api.response.UserArchivesResponse
+import com.ke.biliblli.api.response.UserFavListResponse
+import com.ke.biliblli.api.response.UserInfoResponse
 import com.ke.biliblli.api.response.VideoInfoResponse
 import com.ke.biliblli.api.response.VideoUrlResponse
 import com.ke.biliblli.api.response.VideoViewResponse
@@ -30,10 +36,19 @@ import javax.inject.Singleton
 class BilibiliRepositoryImpl @Inject constructor(
     private val bilibiliApi: BilibiliApi,
     override val bilibiliProtoApi: BilibiliProtoApi,
+    private val bilibiliHtmlApi: BilibiliHtmlApi,
     private val bilibiliStorage: BilibiliStorage
 ) :
     BilibiliRepository {
 
+
+    override suspend fun userFav(mid: Long): BaseResponse<UserFavListResponse> {
+        return bilibiliApi.userFav(mid)
+    }
+
+//    override suspend fun getBuvid3(): String? {
+//        return bilibiliApi.getBuvid().data?.buvid
+//    }
 
     override suspend fun laterWatchList(): BaseResponse<LaterWatchResponse> {
         return bilibiliApi.laterWatch()
@@ -56,6 +71,15 @@ class BilibiliRepositoryImpl @Inject constructor(
 //    override suspend fun dm(type: Int, oid: Long, index: Int): DmSegSDKReply {
 //        return bilibiliProtoApi.dm(type, oid, index)
 //    }
+
+    override suspend fun userVideos(
+        userId: Long,
+        index: Int,
+        size: Int,
+        keywords: String
+    ): BaseResponse<UserArchivesResponse> {
+        return bilibiliApi.userVideos(userId, size, index, keywords)
+    }
 
     override suspend fun dynamicList(
         offset: String?,
@@ -84,7 +108,7 @@ class BilibiliRepositoryImpl @Inject constructor(
         return bilibiliApi.videoInfo(bvid, now, sign!!)
     }
 
-    override suspend fun loginIngo(): BaseResponse<LoginInfoResponse> {
+    override suspend fun loginInfo(): BaseResponse<LoginInfoResponse> {
         val loginInfo = bilibiliApi.loginInfo()
         val params = loginInfo.data!!
         bilibiliStorage.wbiParams = WbiParams(
@@ -92,16 +116,131 @@ class BilibiliRepositoryImpl @Inject constructor(
             params.json.sub.substring(params.json.sub.lastIndexOf("/")).split(".")[0],
             System.currentTimeMillis()
         )
+
+//        if (params.mid != null) {
+//            bilibiliApi.userFav(params.mid!!)
+//            bilibiliApi.userFavVideo(params.mid!!, 20, 1)
+//        }
+//        val uid = loginInfo.data?.mid
+//        if (uid != null) {
+//            bilibiliStorage.uid = uid
+//            bilibiliStorage.eid = genAuroraEid(uid)
+//        }
         return loginInfo
     }
 
+//    val spmPrefixExp = Regex("<meta name="spm_prefix" content="([^"]+?)">")
+
+    val pattern =
+        """<meta\s+name="spm_prefix"\s+content="([^"]+)"\s*/?>""".toRegex(RegexOption.IGNORE_CASE)
+
+    override suspend fun initBuvid() {
+        bilibiliHtmlApi.mainPage()
+//        val html = bilibiliHtmlApi.dynamic()
+//
+////        val spmPrefixExp = """your_regex_pattern_here""" // Replace with actual regex
+//        val spmPrefixMatch = pattern.find(html) ?: throw Exception("No match found")
+//        val spmPrefix = spmPrefixMatch.groupValues[1]
+//
+//        val rand = Random(seed = 256)
+//
+//// Generate the byte array components
+//        val part1 = ByteArray(32) { rand.nextInt(256).toByte() }
+//        val part2 = byteArrayOf(0, 0, 0, 0)
+//        val part3 = byteArrayOf(73, 69, 78, 68) // "IEND" in ASCII
+//        val part4 = ByteArray(4) { rand.nextInt(256).toByte() }
+//
+//// Combine all byte arrays
+//        val combined = part1 + part2 + part3 + part4
+//
+//        val randPngEnd = Base64.encodeToString(combined, Base64.NO_WRAP)
+//
+//// Build JSON data
+//        val jsonData = JSONObject().apply {
+//            put("3064", 1)
+//            put("39c8", "$spmPrefix.fp.risk")
+//            put("3c43", JSONObject().apply {
+//                put("adca", "Linux")
+//                put("bfe9", randPngEnd.takeLast(50))
+//            })
+//        }.toString()
+//
+//        bilibiliApi.activeBuvid(Payload(jsonData))
+//        userRelationStatus(33882856)
+//
+//        val response = userInfo(33882856)
+//
+//        response.data
+    }
+
+    private fun genAuroraEid(uid: Long): String? {
+        if (uid == 0L) {
+            return null
+        }
+        val uidString = uid.toString()
+        val resultBytes = ByteArray(uidString.length) { i ->
+            (uidString[i].code xor "ad1va46a7lza"[i % 12].code).toByte()
+        }
+        var auroraEid = String(Base64.encode(resultBytes, Base64.NO_WRAP))
+        auroraEid = auroraEid.replace(Regex("=*$"), "")
+        return auroraEid
+    }
+
+    override suspend fun userNavNum(id: Long) {
+        return bilibiliApi.userNavNum(id)
+    }
 
     override suspend fun homeRecommendVideos(index: Int): BaseResponse<HomeRecommendListResponse> {
         return bilibiliApi.homeRecommendVideoList(index, index)
     }
 
+    override suspend fun favDetail(id: Long, index: Int, size: Int) =
+        bilibiliApi.favDetail(id, index, size)
+
+
+    override suspend fun userFollowers(userId: Long, index: Int, size: Int) =
+        bilibiliApi.userFollowers(userId, index, size)
+
+    override suspend fun userFollowings(
+        userId: Long,
+        index: Int,
+        size: Int
+    ) = bilibiliApi.userFollowings(userId, index, size)
+
     override suspend fun videoView(bvid: String): BaseResponse<VideoViewResponse> {
         return bilibiliApi.videoView(bvid)
+    }
+
+    override suspend fun userRelationStatus(uid: Long): BaseResponse<RelationStatusResponse> {
+        return bilibiliApi.userRelationStatus(uid)
+    }
+
+    override suspend fun userInfo(mid: Long): BaseResponse<UserInfoResponse> {
+
+        var current = bilibiliStorage.wbiParams
+
+        val wbiParams = if (current?.canUse() != true) {
+            createAndSaveWbiParams()
+        } else {
+            current
+        }
+
+        val platform = "web"
+        val location = "1550101"
+
+        val now = System.currentTimeMillis() / 1000
+        val treeMap = TreeMap<String, Any>()
+        treeMap.put("mid", mid)
+        treeMap.put("wts", now)
+        treeMap.put("platform", platform)
+        treeMap.put("web_location", location)
+        treeMap.put("token", "")
+        val sign = WbiUtil.enc(treeMap, wbiParams.image, wbiParams.sub)
+
+
+        return bilibiliApi.userInfo(
+            mid, platform, location, "", now, sign!!
+        )
     }
 
     override suspend fun history(

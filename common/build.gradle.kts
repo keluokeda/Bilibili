@@ -54,6 +54,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation(libs.retrofit)
     implementation("com.squareup.retrofit2:converter-protobuf:2.11.0")
+    implementation("com.squareup.retrofit2:converter-scalars:2.11.0")
     implementation(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
     // define any required OkHttp artifacts without version
     implementation("com.squareup.okhttp3:okhttp")

@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,12 +45,13 @@ import androidx.tv.material3.Text
 import com.ke.bilibili.tv.observeWithLifecycle
 import com.ke.bilibili.tv.ui.component.DanmakuItem
 import com.ke.bilibili.tv.ui.component.DanmakuView
+import com.ke.biliblli.common.entity.DanmakuPosition
 import com.ke.biliblli.viewmodel.AudioResolution
+import com.ke.biliblli.viewmodel.Resolution
 import com.ke.biliblli.viewmodel.VideoDetailAction
 import com.ke.biliblli.viewmodel.VideoDetailEvent
 import com.ke.biliblli.viewmodel.VideoDetailState
 import com.ke.biliblli.viewmodel.VideoDetailViewModel
-import com.ke.biliblli.viewmodel.VideoResolution
 import com.orhanobut.logger.Logger
 
 @OptIn(UnstableApi::class)
@@ -56,6 +59,8 @@ import com.orhanobut.logger.Logger
 internal fun VideoDetailRoute() {
     val viewModel = hiltViewModel<VideoDetailViewModel>()
 
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var sender by remember {
         mutableStateOf<((DanmakuItem) -> Unit)?>(null)
@@ -81,7 +86,6 @@ internal fun VideoDetailRoute() {
     }
 
 
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     VideoDetailScreen(
         uiState,
@@ -108,7 +112,7 @@ private fun VideoDetailScreen(
     uiState: VideoDetailState,
     retry: () -> Unit,
     setControllerVisible: (Boolean) -> Unit,
-    updateVideoResolution: (VideoResolution) -> Unit,
+    updateVideoResolution: (Resolution) -> Unit,
     updateAudioResolution: (AudioResolution) -> Unit,
     receiver: ((DanmakuItem) -> Unit) -> Unit
 ) {
@@ -156,9 +160,44 @@ private fun VideoDetailScreen(
 
                     )
 
-                    DanmakuView(modifier = Modifier.fillMaxSize()) {
-                        receiver(it)
+                    if (uiState.danmakuEnable) {
+
+
+                        Box(
+                            modifier = when (uiState.danmakuPosition) {
+                                DanmakuPosition.Full -> Modifier.fillMaxSize()
+                                DanmakuPosition.Top2 -> Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(2f)
+
+                                DanmakuPosition.Top3 -> Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(3f)
+
+                                DanmakuPosition.Top4 -> Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(4f)
+
+                                DanmakuPosition.Top5 -> Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(5f)
+
+                                DanmakuPosition.Top6 -> Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(6f)
+                            }.align(Alignment.TopCenter)
+                        ) {
+                            DanmakuView(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                receiver(it)
+                            }
+                        }
+
+
                     }
+
+
 
 
 
@@ -202,7 +241,7 @@ private fun VideoDetailScreen(
                                             updateVideoResolution(resolution)
                                         }, enabled = resolution != uiState.currentVideoResolution
                                     ) {
-                                        Text(resolution.text)
+                                        Text(resolution.videoResolution.displayName)
                                     }
 
                                 }

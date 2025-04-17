@@ -89,9 +89,7 @@ class MainActivity : ComponentActivity() {
                                 HomeRecommendVideoListRoute {
                                     navController.navigate(
                                         Screen.VideoDetail(
-                                            it.cid,
-                                            it.bvid,
-                                            it.id
+                                            it.bvid
                                         )
                                     )
                                 }

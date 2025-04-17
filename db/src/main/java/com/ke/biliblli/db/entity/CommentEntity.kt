@@ -13,8 +13,10 @@ data class CommentEntity(
     val commentId: Long,
     val oid: Long,
     val type: Int,
+    val userId: Long,
     val username: String,
     val avatar: String,
+    val userSign: String,
     /**
      * 父评论id，一级评论为0
      */

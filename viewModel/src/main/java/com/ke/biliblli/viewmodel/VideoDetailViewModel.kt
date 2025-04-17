@@ -19,10 +19,12 @@ import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.navigation.toRoute
 import com.ke.biliblli.common.BilibiliRepository
+import com.ke.biliblli.common.BilibiliStorage
 import com.ke.biliblli.common.CrashHandler
 import com.ke.biliblli.common.Screen
 import com.ke.biliblli.common.entity.BilibiliDanmaku
-import com.ke.biliblli.viewmodel.VideoDetailEvent.ShowVideoResolutionListDialog
+import com.ke.biliblli.common.entity.DanmakuPosition
+import com.ke.biliblli.common.entity.VideoResolution
 import com.orhanobut.logger.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -35,20 +37,6 @@ import javax.inject.Inject
 
 private const val minRatio = 1.0f
 
-val videoResolutionPairList = listOf<Pair<Int, String>>(
-    6 to "240P 极速",
-    16 to "360P 流畅",
-    32 to "480P 清晰",
-    64 to "720P 高清",
-    74 to "720P60 高帧率",
-    80 to "1080P 高清",
-    112 to "1080P+ 高码率",
-    116 to "1080P60 高帧率",
-    120 to "4K 超清",
-    125 to "HDR 真彩色",
-    126 to "杜比视界",
-    127 to "8K 超高清"
-)
 
 val audioResolutionPairList = listOf<Triple<Int, Int, String>>(
     Triple(0, 30216, "64K"),
@@ -63,6 +51,7 @@ val audioResolutionPairList = listOf<Triple<Int, Int, String>>(
 class VideoDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val bilibiliRepository: BilibiliRepository,
+    private val bilibiliStorage: BilibiliStorage,
     @ApplicationContext context: Context,
 
     ) :
@@ -242,14 +231,14 @@ class VideoDetailViewModel @Inject constructor(
                 response.dash.run {
 
                     val videoList = video.map { dashVideo ->
-                        val text = videoResolutionPairList.first {
-                            it.first == dashVideo.id
-                        }.second
+                        val text = VideoResolution.entries.first {
+                            it.code == dashVideo.id
+                        }
 
-                        VideoResolution(dashVideo.id, text, dashVideo.baseUrl)
+                        Resolution(text, dashVideo.baseUrl)
                     }.distinctBy {
-                        it.id
-                    }.sortedByDescending { it.id }
+                        it.videoResolution.code
+                    }.sortedByDescending { it.videoResolution.code }
 
 
                     Logger.d(audio.map {
@@ -274,10 +263,13 @@ class VideoDetailViewModel @Inject constructor(
                     _uiState.value = VideoDetailState.Content(
                         player,
                         videoResolutionList = videoList,
-                        currentVideoResolution = videoList.first(),
+                        currentVideoResolution = videoList.firstOrNull {
+                            it.videoResolution == bilibiliStorage.videoResolution
+                        } ?: videoList.first(),
                         audioResolutionList = audioList,
-                        currentAudioResolution = audioList.first()
-
+                        currentAudioResolution = audioList.first(),
+                        danmakuEnable = bilibiliStorage.danmakuEnable,
+                        danmakuPosition = bilibiliStorage.danmakuPosition
                     )
                     play(videoList.first().url, audioList.first().url)
                 }
@@ -335,16 +327,16 @@ class VideoDetailViewModel @Inject constructor(
             }
 
             VideoDetailAction.ShowVideoResolutionListDialog -> {
-                viewModelScope.launch {
-                    (uiState.value as? VideoDetailState.Content)?.apply {
-                        _event.send(
-                            ShowVideoResolutionListDialog(
-                                videoResolutionList,
-                                currentVideoResolution
-                            )
-                        )
-                    }
-                }
+//                viewModelScope.launch {
+//                    (uiState.value as? VideoDetailState.Content)?.apply {
+//                        _event.send(
+//                            ShowVideoResolutionListDialog(
+//                                videoResolutionList,
+//                                currentVideoResolution
+//                            )
+//                        )
+//                    }
+//                }
             }
 
             is VideoDetailAction.UpdateVideoResolution -> {
@@ -391,11 +383,12 @@ class VideoDetailViewModel @Inject constructor(
 
 }
 
-data class VideoResolution(
-    val id: Int,
-    val text: String,
+
+data class Resolution(
+    val videoResolution: VideoResolution,
     val url: String
 )
+
 
 data class AudioResolution(
     val id: Int,
@@ -409,10 +402,12 @@ sealed interface VideoDetailState {
     data object Error : VideoDetailState
     data class Content(
         val player: ExoPlayer,
-        val videoResolutionList: List<VideoResolution>,
-        val currentVideoResolution: VideoResolution,
+        val videoResolutionList: List<Resolution>,
+        val currentVideoResolution: Resolution,
         val audioResolutionList: List<AudioResolution>,
         val currentAudioResolution: AudioResolution,
+        val danmakuEnable: Boolean,
+        val danmakuPosition: DanmakuPosition,
         val isFullScreen: Boolean = false,
         val ratio: Float = 16 / 9.0f,
         val showController: Boolean = false,
@@ -442,7 +437,7 @@ sealed interface VideoDetailAction {
 
     data object ShowVideoResolutionListDialog : VideoDetailAction
 
-    data class UpdateVideoResolution(val newValue: VideoResolution) : VideoDetailAction
+    data class UpdateVideoResolution(val newValue: Resolution) : VideoDetailAction
 
     data class UpdateAudioResolution(val newValue: AudioResolution) : VideoDetailAction
 

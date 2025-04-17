@@ -17,8 +17,8 @@ android {
         applicationId = "com.ke.bilibili.tv"
         minSdk = 21
         targetSdk = 35
-        versionCode = 9
-        versionName = "1.0.9"
+        versionCode = 10
+        versionName = "1.1.0"
 
 
     }
@@ -77,6 +77,7 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":viewModel"))
     implementation(project(":db"))
+    implementation(project(":repository"))
 
     val nav_version = "2.8.9"
     // Jetpack Compose integration

@@ -60,7 +60,9 @@ class CommentsRemoteMediator(
                         date = it.ctime,
                         ip = it.replyControl.location,
                         timeDesc = it.replyControl.timeDesc,
-                        content = it.content.message
+                        content = it.content.message,
+                        userId = it.member.mid.toLong(),
+                        userSign = it.member.sign
                     )
                 }
             )

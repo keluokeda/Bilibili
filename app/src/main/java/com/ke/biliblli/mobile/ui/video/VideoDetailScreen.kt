@@ -36,21 +36,16 @@ import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.CheckBox
-import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.CopyAll
 import androidx.compose.material.icons.filled.CurrencyBitcoin
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PlayCircleOutline
-import androidx.compose.material.icons.filled.RadioButtonChecked
-import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.ThumbUp
@@ -67,7 +62,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
@@ -84,7 +78,6 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -119,18 +112,15 @@ import com.ke.biliblli.common.format
 import com.ke.biliblli.db.entity.CommentEntity
 import com.ke.biliblli.mobile.observeWithLifecycle
 import com.ke.biliblli.mobile.ui.theme.BilibiliTheme
+import com.ke.biliblli.viewmodel.CommentsViewModel
 import com.ke.biliblli.viewmodel.VideoCommentSortType
 import com.ke.biliblli.viewmodel.VideoCommentsEvent
-import com.ke.biliblli.viewmodel.VideoCommentsViewModel
 import com.ke.biliblli.viewmodel.VideoDetailAction
-import com.ke.biliblli.viewmodel.VideoDetailEvent
 import com.ke.biliblli.viewmodel.VideoDetailState
 import com.ke.biliblli.viewmodel.VideoDetailViewModel
 import com.ke.biliblli.viewmodel.VideoInfoAction
 import com.ke.biliblli.viewmodel.VideoInfoState
 import com.ke.biliblli.viewmodel.VideoInfoViewModel
-import com.ke.biliblli.viewmodel.VideoResolution
-import com.orhanobut.logger.Logger
 import dev.vivvvek.seeker.Seeker
 import dev.vivvvek.seeker.SeekerDefaults
 import kotlinx.coroutines.launch
@@ -172,44 +162,44 @@ fun VideoDetailRoute(
     })
 
 
-    var videoResolutionPair by rememberSaveable {
-        mutableStateOf<Pair<List<VideoResolution>, VideoResolution>?>(null)
-    }
+//    var videoResolutionPair by rememberSaveable {
+//        mutableStateOf<Pair<List<VideoResolution>, VideoResolution>?>(null)
+//    }
+//
+//    viewModel.event.observeWithLifecycle {
+//        when (it) {
+//            is VideoDetailEvent.ShowVideoResolutionListDialog -> {
+//                videoResolutionPair = it.list to it.current
+//            }
+//        }
+//    }
 
-    viewModel.event.observeWithLifecycle {
-        when (it) {
-            is VideoDetailEvent.ShowVideoResolutionListDialog -> {
-                videoResolutionPair = it.list to it.current
-            }
-        }
-    }
-
-    if (videoResolutionPair != null) {
-        ModalBottomSheet(onDismissRequest = {
-            videoResolutionPair = null
-        }) {
-            val pair = videoResolutionPair!!
-
-            pair.first.forEach { videoResolution ->
-                ListItem(headlineContent = {
-                    Text(videoResolution.text)
-                }, leadingContent = {
-                    if (videoResolution == pair.second) {
-                        Icon(
-                            Icons.Default.RadioButtonChecked,
-                            null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    } else {
-                        Icon(Icons.Default.RadioButtonUnchecked, null)
-                    }
-                }, modifier = Modifier.clickable(enabled = videoResolution != pair.second) {
-                    viewModel.handleAction(VideoDetailAction.UpdateVideoResolution(videoResolution))
-                    videoResolutionPair = null
-                })
-            }
-        }
-    }
+//    if (videoResolutionPair != null) {
+//        ModalBottomSheet(onDismissRequest = {
+//            videoResolutionPair = null
+//        }) {
+//            val pair = videoResolutionPair!!
+//
+//            pair.first.forEach { videoResolution ->
+//                ListItem(headlineContent = {
+//                    Text(videoResolution.text)
+//                }, leadingContent = {
+//                    if (videoResolution == pair.second) {
+//                        Icon(
+//                            Icons.Default.RadioButtonChecked,
+//                            null,
+//                            tint = MaterialTheme.colorScheme.primary
+//                        )
+//                    } else {
+//                        Icon(Icons.Default.RadioButtonUnchecked, null)
+//                    }
+//                }, modifier = Modifier.clickable(enabled = videoResolution != pair.second) {
+//                    viewModel.handleAction(VideoDetailAction.UpdateVideoResolution(videoResolution))
+//                    videoResolutionPair = null
+//                })
+//            }
+//        }
+//    }
 }
 
 @UnstableApi
@@ -340,7 +330,7 @@ private fun VideoDetailScreen(
                                             onClick = showVideoResolutionListDialog,
                                             colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
                                         ) {
-                                            Text(uiState.currentVideoResolution.text)
+                                            Text(uiState.currentVideoResolution.videoResolution.displayName)
                                         }
 
 
@@ -779,7 +769,7 @@ private fun VideoInfoScreen(
 
                     items(uiState.info.related) {
                         RelatedVideoItem(it) {
-                            toVideoDetail(Screen.VideoDetail(it.cid, it.bvid, it.aid))
+                            toVideoDetail(Screen.VideoDetail(it.bvid))
                         }
                     }
                 }
@@ -903,7 +893,7 @@ private fun RelatedVideoItem(item: VideoDetailResponse, onClick: () -> Unit) {
 
 @Composable
 private fun VideoCommentsRoute() {
-    val viewModel = hiltViewModel<VideoCommentsViewModel>()
+    val viewModel = hiltViewModel<CommentsViewModel>()
     val comments = viewModel.comments.collectAsLazyPagingItems()
 
     val sort by viewModel.sort.collectAsStateWithLifecycle()

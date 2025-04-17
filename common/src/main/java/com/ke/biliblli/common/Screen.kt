@@ -8,11 +8,21 @@ sealed interface Screen {
     data object Splash : Screen
 
     @Serializable
-    data object Main : Screen
+    data class Main(val userId: Long) : Screen
 
     @Serializable
     data class VideoDetail(val bvid: String) : Screen
 
     @Serializable
     data object Login : Screen
+
+    @Serializable
+    data class Comment(val id: Long, val type: Int) : Screen
+
+    @Serializable
+    data class Convert(val bvid: String) : Screen
+
+    @Serializable
+    data class UserDetail(val id: Long, val name: String, val avatar: String, val sign: String) :
+        Screen
 }

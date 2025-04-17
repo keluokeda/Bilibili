@@ -1,21 +1,33 @@
 package com.ke.biliblli.api
 
+import com.ke.biliblli.api.request.Payload
 import com.ke.biliblli.api.response.BaseResponse
 import com.ke.biliblli.api.response.CommentResponse
 import com.ke.biliblli.api.response.DynamicResponse
 import com.ke.biliblli.api.response.DynamicUpListResponse
+import com.ke.biliblli.api.response.EmptyJson
+import com.ke.biliblli.api.response.FavResourceListResponse
 import com.ke.biliblli.api.response.HistoryResponse
 import com.ke.biliblli.api.response.HomeRecommendListResponse
 import com.ke.biliblli.api.response.LaterWatchResponse
 import com.ke.biliblli.api.response.LoginInfoResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
+import com.ke.biliblli.api.response.RelationStatusResponse
+import com.ke.biliblli.api.response.SeasonsListDataResponse
+import com.ke.biliblli.api.response.UserArchivesResponse
+import com.ke.biliblli.api.response.UserFavListResponse
+import com.ke.biliblli.api.response.UserInfoResponse
+import com.ke.biliblli.api.response.UserListResponse
 import com.ke.biliblli.api.response.VideoDetailResponse
 import com.ke.biliblli.api.response.VideoInfoResponse
 import com.ke.biliblli.api.response.VideoUrlResponse
 import com.ke.biliblli.api.response.VideoViewResponse
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Query
+import retrofit2.http.Url
 
 interface BilibiliApi {
 
@@ -140,6 +152,104 @@ interface BilibiliApi {
      */
     @GET("x/polymer/web-dynamic/v1/portal?up_list_more=1&web_location=333.1365")
     suspend fun updateDynamicUpList(): BaseResponse<DynamicUpListResponse>
+
+
+    /**
+     * 用户信息
+     */
+    @GET("x/space/wbi/acc/info")
+    suspend fun userInfo(
+        @Query("mid") mid: Long,
+        @Query("platform") platform: String,
+        @Query("web_location") location: String,
+        @Query("token") token: String,
+        @Query("wts") wts: Long,
+        @Query("w_rid") sign: String
+    ): BaseResponse<UserInfoResponse>
+
+    @GET("x/relation/stat")
+    suspend fun userRelationStatus(@Query("vmid") vmid: Long): BaseResponse<RelationStatusResponse>
+
+
+    @POST("x/internal/gaia-gateway/ExClimbWuzhi")
+    suspend fun activeBuvid(
+        @Body payload: Payload
+    ): BaseResponse<EmptyJson>
+
+
+//    @GET("x/web-frontend/getbuvid")
+//    suspend fun getBuvid(): BaseResponse<BuvidResponse>
+
+    /**
+     * 用户收藏夹
+     */
+    @GET("x/v3/fav/folder/created/list-all")
+    suspend fun userFav(
+        @Query("up_mid") mid: Long,
+        @Query("type") type: Int = 2
+    ): BaseResponse<UserFavListResponse>
+
+//    @GET("x/v3/fav/folder/collected/list")
+//    suspend fun userFavVideo(
+//        @Query("up_mid") mid: Long,
+//        @Query("ps") size: Int,
+//        @Query("pn") index: Int,
+//        @Query("platform") platform: String = "web"
+//    )
+
+
+    /**
+     * 收藏夹详情
+     */
+    @GET("x/v3/fav/resource/list")
+    suspend fun favDetail(
+        @Query("media_id") id: Long,
+        @Query("pn") index: Int,
+        @Query("ps") size: Int
+    ): BaseResponse<FavResourceListResponse>
+
+
+    /**
+     * 用户粉丝
+     */
+    @GET("x/relation/followers")
+    suspend fun userFollowers(
+        @Query("vmid") userId: Long,
+        @Query("pn") index: Int = 1,
+        @Query("ps") size: Int = 20
+    ): BaseResponse<UserListResponse>
+
+    @GET("x/relation/followings")
+    suspend fun userFollowings(
+        @Query("vmid") userId: Long,
+        @Query("pn") index: Int = 1,
+        @Query("ps") size: Int = 20
+    ): BaseResponse<UserListResponse>
+
+    @GET("x/space/navnum")
+    suspend fun userNavNum(@Query("mid") id: Long)
+
+
+    @GET("x/polymer/web-space/home/seasons_series")
+    suspend fun seasonsSeriesList(
+        @Query("mid") userId: Long,
+        @Query("page_num") index: Int = 1,
+        @Query("page_size") size: Int = 20
+    ): BaseResponse<SeasonsListDataResponse>
+
+    /**
+     * 获取用户投稿的视频
+     */
+    @GET("x/series/recArchivesByKeywords")
+    suspend fun userVideos(
+        @Query("mid") userId: Long,
+        @Query("ps") size: Int,
+        @Query("pn") index: Int,
+        @Query("keywords") keywords: String = ""
+    ): BaseResponse<UserArchivesResponse>
+
+    @GET
+    suspend fun request(@Url url: String)
 
     companion object {
         const val baseUrl = "https://api.bilibili.com/"

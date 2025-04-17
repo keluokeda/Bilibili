@@ -28,8 +28,11 @@ class SplashViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                if (bilibiliRepository.loginIngo().data!!.isLogin) {
-                    _event.send(SplashEvent.ToMain)
+
+                bilibiliRepository.initBuvid()
+                val data = bilibiliRepository.loginInfo().data
+                if (data!!.isLogin) {
+                    _event.send(SplashEvent.ToMain(data.mid!!))
                 } else {
                     _event.send(SplashEvent.ToLogin)
                 }
@@ -53,6 +56,6 @@ sealed interface SplashAction {
 }
 
 sealed interface SplashEvent {
-    data object ToMain : SplashEvent
+    data class ToMain(val userId: Long) : SplashEvent
     data object ToLogin : SplashEvent
 }

@@ -4,12 +4,18 @@ import com.ke.biliblli.api.response.BaseResponse
 import com.ke.biliblli.api.response.CommentResponse
 import com.ke.biliblli.api.response.DynamicResponse
 import com.ke.biliblli.api.response.DynamicUpListResponse
+import com.ke.biliblli.api.response.FavResourceListResponse
 import com.ke.biliblli.api.response.HistoryResponse
 import com.ke.biliblli.api.response.HomeRecommendListResponse
 import com.ke.biliblli.api.response.LaterWatchResponse
 import com.ke.biliblli.api.response.LoginInfoResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
+import com.ke.biliblli.api.response.RelationStatusResponse
+import com.ke.biliblli.api.response.UserArchivesResponse
+import com.ke.biliblli.api.response.UserFavListResponse
+import com.ke.biliblli.api.response.UserInfoResponse
+import com.ke.biliblli.api.response.UserListResponse
 import com.ke.biliblli.api.response.VideoInfoResponse
 import com.ke.biliblli.api.response.VideoUrlResponse
 import com.ke.biliblli.api.response.VideoViewResponse
@@ -22,6 +28,38 @@ interface BilibiliRepository {
 
     suspend fun homeRecommendVideos(index: Int): BaseResponse<HomeRecommendListResponse>
 
+//    suspend fun getBuvid3(): String?
+
+    suspend fun favDetail(
+        id: Long,
+        index: Int,
+        size: Int
+    ): BaseResponse<FavResourceListResponse>
+
+    suspend fun userFollowers(
+        userId: Long,
+        index: Int = 1,
+        size: Int = 20
+    ): BaseResponse<UserListResponse>
+
+    suspend fun userFollowings(
+        userId: Long,
+        index: Int = 1,
+        size: Int = 20
+    ): BaseResponse<UserListResponse>
+
+    suspend fun userNavNum(id: Long)
+
+
+    suspend fun userFav(
+        mid: Long
+    ): BaseResponse<UserFavListResponse>
+
+    suspend fun userRelationStatus(uid: Long): BaseResponse<RelationStatusResponse>
+
+    suspend fun userInfo(
+        mid: Long,
+    ): BaseResponse<UserInfoResponse>
 
     suspend fun videoUrl(
         cid: Long, bvid: String
@@ -42,8 +80,10 @@ interface BilibiliRepository {
 
     suspend fun checkLogin(key: String): BaseResponse<PollQrcodeResponse>
 
-    suspend fun loginIngo(): BaseResponse<LoginInfoResponse>
+    suspend fun loginInfo(): BaseResponse<LoginInfoResponse>
 
+
+    suspend fun initBuvid()
 
     suspend fun videoInfo(
         bvid: String
@@ -80,4 +120,9 @@ interface BilibiliRepository {
             )
         }
     }
+
+    suspend fun userVideos(
+        userId: Long, size: Int, index: Int,
+        keywords: String = ""
+    ): BaseResponse<UserArchivesResponse>
 }

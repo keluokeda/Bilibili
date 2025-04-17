@@ -26,19 +26,26 @@ import javax.inject.Inject
 private val initialSortType = VideoCommentSortType.Time
 
 @HiltViewModel
-class VideoCommentsViewModel @Inject constructor(
+class CommentsViewModel @Inject constructor(
     private val commentDao: CommentDao,
-    private val bilibiliRepository: BilibiliRepository,
+    bilibiliRepository: BilibiliRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    private val params = savedStateHandle.toRoute<Screen.VideoDetail>()
-
-    private val commentsRemoteMediator =
-        CommentsRemoteMediator(bilibiliRepository, 1, 1, commentDao, initialSortType.type)
+    private val params = savedStateHandle.toRoute<Screen.Comment>()
 
     private val _sort = MutableStateFlow(initialSortType)
 
     val sort = _sort.asStateFlow()
+
+    private val commentsRemoteMediator =
+        CommentsRemoteMediator(
+            bilibiliRepository,
+            params.id,
+            params.type,
+            commentDao,
+            sort.value.type
+        )
+
 
     private val _event = Channel<VideoCommentsEvent>(capacity = Channel.CONFLATED)
 
@@ -53,7 +60,7 @@ class VideoCommentsViewModel @Inject constructor(
         ),
         remoteMediator = commentsRemoteMediator
     ) {
-        commentDao.getComments(1, 1)
+        commentDao.getComments(params.id, params.type)
     }.flow.cachedIn(viewModelScope)
 
     fun toggleSort() {

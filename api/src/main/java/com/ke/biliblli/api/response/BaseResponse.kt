@@ -4,10 +4,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class BaseResponse<T>(
-    val code: Int,
-    val message: String,
+    val code: Int = -1,
+    val message: String = "",
     val ttl: Int = 0,
-    val data: T?
+    val data: T? = null
 ) {
     val success: Boolean
         get() = code == 0

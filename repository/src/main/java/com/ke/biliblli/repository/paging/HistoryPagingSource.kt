@@ -24,6 +24,7 @@ class HistoryPagingSource(
         return try {
             val response =
                 bilibiliRepository.history(cursor?.max, cursor?.business, cursor?.at, type)
+            cursor = response.data?.cursor
             LoadResult.Page(
                 data = response.data!!.list,
                 prevKey = null,

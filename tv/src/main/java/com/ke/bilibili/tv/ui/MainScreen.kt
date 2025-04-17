@@ -33,8 +33,10 @@ import com.ke.bilibili.tv.viewmodel.MainViewModel
 enum class MainTab(val displayName: String, val index: Int) {
     Recommend("推荐", 0),
     Dynamic("动态", 1),
-    LaterWatch("稍后再看", 2),
-    History("历史记录", 3)
+    Fav("我的收藏", 2),
+    LaterWatch("稍后再看", 3),
+    History("历史记录", 4),
+    Settings("设置", 5),
 }
 
 
@@ -111,6 +113,10 @@ fun MainRoute(navigate: (Any) -> Unit) {
                 LaterWatchRoute(navigate)
             } else if (selectedTab == MainTab.History) {
                 HistoryRoute(historyState, navigate)
+            } else if (selectedTab == MainTab.Settings) {
+                SettingsRoute()
+            } else if (selectedTab == MainTab.Fav) {
+                MyFavRoute(navigate)
             }
         }
 

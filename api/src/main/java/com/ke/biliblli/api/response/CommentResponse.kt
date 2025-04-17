@@ -43,7 +43,8 @@ data class CommentOwner(
     @JsonNames("uname")
     val name: String,
     val mid: String,
-    val sex: String
+    val sex: String,
+    val sign: String
 )
 
 @Serializable
