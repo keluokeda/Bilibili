@@ -93,7 +93,7 @@ private fun MyFavScreen(
                 items(mediaList.itemCount) {
                     val item = mediaList[it]!!
                     Card(onClick = {
-                        navigate(Screen.VideoDetail(item.bvid))
+                        navigate(Screen.VideoInfo(item.bvid))
                     }) {
                         Box(
                             modifier = Modifier

@@ -7,11 +7,13 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import com.ke.biliblli.api.response.SeasonsArchiveResponse
+import com.ke.biliblli.api.response.SeasonsResponse
 import com.ke.biliblli.api.response.UserResponse
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.Screen
 import com.ke.biliblli.repository.paging.UserFansPagingSource
 import com.ke.biliblli.repository.paging.UserFollowingsPagingSource
+import com.ke.biliblli.repository.paging.UserSeasonsPagingSource
 import com.ke.biliblli.repository.paging.UserVideosPagingSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
@@ -38,6 +40,12 @@ class UserDetailViewModel @Inject constructor(
             )
         }
     }
+
+    val seasonsList = Pager<Int, SeasonsResponse>(
+        config = PagingConfig(pageSize = 20, enablePlaceholders = false)
+    ) {
+        UserSeasonsPagingSource(bilibiliRepository, userDetailParams.id)
+    }.flow.cachedIn(viewModelScope)
 
     val userVideos = Pager<Int, SeasonsArchiveResponse>(
         config = PagingConfig(pageSize = 20, enablePlaceholders = false)

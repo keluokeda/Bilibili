@@ -50,7 +50,7 @@ internal fun LoginRoute(
                 ).show()
             }
 
-            LoginEvent.ToMain -> {
+            LoginEvent.ToSplash -> {
                 toMain()
             }
         }

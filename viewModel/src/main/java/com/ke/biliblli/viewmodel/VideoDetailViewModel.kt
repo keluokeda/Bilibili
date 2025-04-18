@@ -218,13 +218,13 @@ class VideoDetailViewModel @Inject constructor(
             _uiState.value = VideoDetailState.Loading
 
             try {
-                val view = bilibiliRepository.videoView(params.bvid).data!!
+//                val view = bilibiliRepository.videoView(params.bvid).data!!
 
 
-                val response = bilibiliRepository.videoUrl(view.cid, view.bvid).data!!
+                val response = bilibiliRepository.videoUrl(params.cid, params.bvid).data!!
 
 
-                loadDanmakuList(view.cid)
+                loadDanmakuList(params.cid)
 
 
 

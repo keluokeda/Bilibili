@@ -110,4 +110,5 @@ dependencies {
     implementation("io.github.2307vivek:seeker:1.2.2")
 
     implementation("com.lightspark:compose-qr-code:1.0.1")
+
 }

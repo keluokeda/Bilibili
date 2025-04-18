@@ -14,6 +14,7 @@ import com.ke.biliblli.api.response.LoginInfoResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
 import com.ke.biliblli.api.response.RelationStatusResponse
+import com.ke.biliblli.api.response.SeasonsListDataResponse
 import com.ke.biliblli.api.response.UserArchivesResponse
 import com.ke.biliblli.api.response.UserFavListResponse
 import com.ke.biliblli.api.response.UserInfoResponse
@@ -79,6 +80,14 @@ class BilibiliRepositoryImpl @Inject constructor(
         keywords: String
     ): BaseResponse<UserArchivesResponse> {
         return bilibiliApi.userVideos(userId, size, index, keywords)
+    }
+
+    override suspend fun seasonsSeriesList(
+        userId: Long,
+        index: Int,
+        size: Int
+    ): BaseResponse<SeasonsListDataResponse> {
+        return bilibiliApi.seasonsSeriesList(userId, index, size)
     }
 
     override suspend fun dynamicList(

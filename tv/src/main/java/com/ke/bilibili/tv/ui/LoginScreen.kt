@@ -39,7 +39,7 @@ import com.king.zxing.util.CodeUtils
 
 @Composable
 internal fun LoginRoute(
-    toMain: () -> Unit
+    toSplash: () -> Unit
 ) {
     val viewModel = hiltViewModel<LoginViewModel>()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -50,8 +50,8 @@ internal fun LoginRoute(
                 Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
             }
 
-            LoginEvent.ToMain -> {
-                toMain()
+            LoginEvent.ToSplash -> {
+                toSplash()
             }
         }
     }

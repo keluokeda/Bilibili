@@ -102,7 +102,7 @@ fun VideoItem(item: VideoViewEntity, onClick: () -> Unit = {}) {
         Text(
             item.title + "\n",
             maxLines = 2,
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(4.dp)
         )
 

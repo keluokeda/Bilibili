@@ -30,10 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -153,7 +151,7 @@ private fun VideoItem(item: HomeRecommendResponse, onClick: () -> Unit = {}) {
         Text(
             item.title + "\n",
             maxLines = 2,
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(4.dp)
         )
 

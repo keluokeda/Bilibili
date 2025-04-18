@@ -9,13 +9,13 @@ import kotlinx.serialization.json.JsonNames
 @Serializable
 data class VideoInfoResponse(
     @JsonNames("View")
-    val view: VideoDetailResponse,
+    val view: VideoDetailViewResponse,
     @JsonNames("Card")
     val card: UpInfo,
     @JsonNames("Tags")
     val tags: List<VideoTag>,
     @JsonNames("Related")
-    val related: List<VideoDetailResponse>
+    val related: List<VideoDetailViewResponse>
 )
 
 @Serializable

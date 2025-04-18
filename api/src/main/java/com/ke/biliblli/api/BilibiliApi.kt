@@ -19,7 +19,6 @@ import com.ke.biliblli.api.response.UserArchivesResponse
 import com.ke.biliblli.api.response.UserFavListResponse
 import com.ke.biliblli.api.response.UserInfoResponse
 import com.ke.biliblli.api.response.UserListResponse
-import com.ke.biliblli.api.response.VideoDetailResponse
 import com.ke.biliblli.api.response.VideoInfoResponse
 import com.ke.biliblli.api.response.VideoUrlResponse
 import com.ke.biliblli.api.response.VideoViewResponse
@@ -84,13 +83,13 @@ interface BilibiliApi {
     ): BaseResponse<PollQrcodeResponse>
 
 
-    /**
-     * 获取相关视频
-     */
-    @GET("x/web-interface/archive/related")
-    suspend fun relatedVideos(
-        @Query("bvid") bvid: String
-    ): BaseResponse<List<VideoDetailResponse>>
+//    /**
+//     * 获取相关视频
+//     */
+//    @GET("x/web-interface/archive/related")
+//    suspend fun relatedVideos(
+//        @Query("bvid") bvid: String
+//    ): BaseResponse<List<VideoDetailResponse>>
 
 
     /**

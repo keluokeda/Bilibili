@@ -2,6 +2,7 @@ package com.ke.bilibili.tv.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -12,8 +13,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,6 +36,7 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import coil.compose.AsyncImage
 import com.ke.biliblli.api.response.SeasonsArchiveResponse
+import com.ke.biliblli.api.response.SeasonsResponse
 import com.ke.biliblli.api.response.UserResponse
 import com.ke.biliblli.common.Screen
 import com.ke.biliblli.viewmodel.UserDetailAction
@@ -47,9 +52,10 @@ fun UserDetailRoute(navigate: (Any) -> Unit) {
     val userVideos = viewModel.userVideos.collectAsLazyPagingItems()
     val userFans = viewModel.userFans.collectAsLazyPagingItems()
     val userFollowings = viewModel.userFollowings.collectAsLazyPagingItems()
+    val seasonsList = viewModel.seasonsList.collectAsLazyPagingItems()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    UserDetailScreen(uiState, userVideos, navigate, userFans, userFollowings, {
+    UserDetailScreen(uiState, userVideos, navigate, userFans, userFollowings, seasonsList, {
         viewModel.handleAction(UserDetailAction.SelectItem(it))
     })
 }
@@ -61,6 +67,7 @@ private fun UserDetailScreen(
     navigate: (Any) -> Unit,
     userFans: LazyPagingItems<UserResponse>,
     userFollowings: LazyPagingItems<UserResponse>,
+    seasonsList: LazyPagingItems<SeasonsResponse>,
     updateSection: (UserDetailItem) -> Unit
 ) {
 
@@ -125,7 +132,7 @@ private fun UserDetailScreen(
                 items(userVideos.itemCount) {
                     val item = userVideos[it]!!
                     UserVideo(item) {
-                        navigate(Screen.VideoDetail(item.bvid))
+                        navigate(Screen.VideoInfo(item.bvid))
                     }
                 }
             }
@@ -149,6 +156,61 @@ private fun UserDetailScreen(
                         )
                     }
                 }
+            }
+        } else if (uiState.selected == UserDetailItem.Seasons) {
+            LazyColumn(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+
+                items(seasonsList.itemCount) {
+                    val item = seasonsList[it]!!
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        ListItem(selected = false, onClick = {}, headlineContent = {
+                            Text(item.meta.name)
+                        }, trailingContent = {
+//                            OutlinedButton(onClick = {}) {
+                            Text("播放全部")
+//                            }
+                        })
+
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp)
+                        ) {
+                            items(item.archives) { video ->
+                                Card(onClick = {
+                                    navigate(Screen.VideoInfo(video.bvid))
+                                }, modifier = Modifier.width(180.dp)) {
+                                    AsyncImage(
+                                        model = video.pic,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .aspectRatio(16 / 9f),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    Text(video.title + "\n", maxLines = 2)
+                                }
+                            }
+                        }
+                    }
+                }
+
+//                items(userFans.itemCount) {
+//                    val item = userFans[it]!!
+//                    UserView(item) {
+//                        navigate(
+//                            Screen.UserDetail(
+//                                item.mid,
+//                                name = item.uname,
+//                                avatar = item.face,
+//                                sign = item.sign
+//                            )
+//                        )
+//                    }
+//                }
             }
         } else if (uiState.selected == UserDetailItem.Following) {
             LazyVerticalGrid(

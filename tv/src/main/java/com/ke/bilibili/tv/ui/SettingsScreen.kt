@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.tv.material3.Card
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.FilterChip
 import androidx.tv.material3.Icon
@@ -29,6 +30,7 @@ import androidx.tv.material3.Text
 import com.ke.bilibili.tv.viewmodel.SettingsAction
 import com.ke.bilibili.tv.viewmodel.SettingsState
 import com.ke.bilibili.tv.viewmodel.SettingsViewModel
+import com.ke.biliblli.common.Screen
 import com.ke.biliblli.common.entity.DanmakuDensity
 import com.ke.biliblli.common.entity.DanmakuFontSize
 import com.ke.biliblli.common.entity.DanmakuPosition
@@ -36,7 +38,7 @@ import com.ke.biliblli.common.entity.DanmakuSpeed
 import com.ke.biliblli.common.entity.VideoResolution
 
 @Composable
-fun SettingsRoute() {
+fun SettingsRoute(navigate: (Any) -> Unit) {
 
     val viewModel = hiltViewModel<SettingsViewModel>()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -55,7 +57,7 @@ fun SettingsRoute() {
         viewModel.handleAction(SettingsAction.SetDanmakuEnable(it))
     }, {
         viewModel.handleAction(SettingsAction.SetDanmakuColorful(it))
-    })
+    }, navigate)
 }
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalTvMaterial3Api::class)
@@ -68,7 +70,8 @@ private fun SettingsScreen(
     updateDanmakuPosition: (DanmakuPosition) -> Unit = {},
     updateDanmakuFontSize: (DanmakuFontSize) -> Unit = {},
     setDanmakuEnable: (Boolean) -> Unit = {},
-    setDanmakuColorful: (Boolean) -> Unit = {}
+    setDanmakuColorful: (Boolean) -> Unit = {},
+    navigate: (Any) -> Unit
 ) {
 
 
@@ -283,13 +286,13 @@ private fun SettingsScreen(
             }
         }
 
-//        item {
-//            Card(onClick = {
-//
-//            }, modifier = columnModifier) {
-//                Text("清除本地key")
-//            }
-//        }
+        item {
+            Card(onClick = {
+                navigate(Screen.UploadApk)
+            }, modifier = columnModifier) {
+                Text("上传更新安装包文件")
+            }
+        }
     }
 }
 

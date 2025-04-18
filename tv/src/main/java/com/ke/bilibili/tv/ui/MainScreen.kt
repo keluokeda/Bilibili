@@ -114,7 +114,7 @@ fun MainRoute(navigate: (Any) -> Unit) {
             } else if (selectedTab == MainTab.History) {
                 HistoryRoute(historyState, navigate)
             } else if (selectedTab == MainTab.Settings) {
-                SettingsRoute()
+                SettingsRoute(navigate)
             } else if (selectedTab == MainTab.Fav) {
                 MyFavRoute(navigate)
             }

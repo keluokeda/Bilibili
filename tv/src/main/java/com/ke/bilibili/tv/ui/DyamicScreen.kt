@@ -245,7 +245,7 @@ private fun DynamicContent(
         val archive = item.module.dynamic.major!!.archive!!
         DynamicVideoCard(archive)
         LaunchedEffect(UUID.randomUUID()) {
-            paramsCallback?.invoke(Screen.VideoDetail(archive.bvid))
+            paramsCallback?.invoke(Screen.VideoInfo(archive.bvid))
         }
     } else if (item.module.dynamic.major?.live != null) {
         val json = item.module.dynamic.major?.live?.json()!!

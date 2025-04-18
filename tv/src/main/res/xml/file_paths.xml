@@ -1,0 +1,6 @@
+<!-- res/xml/file_paths.xml -->
+<paths>
+    <external-files-path
+        name="apks"
+        path="apks/" />
+</paths>

@@ -65,7 +65,7 @@ private fun HistoryScreen(
             val item = list[it]!!
 
             Card(onClick = {
-                navigate(Screen.VideoDetail(item.history.bvid))
+                navigate(Screen.VideoInfo(item.history.bvid))
             }) {
 
                 Box(

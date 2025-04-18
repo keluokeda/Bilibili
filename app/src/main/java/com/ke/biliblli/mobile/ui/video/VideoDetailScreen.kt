@@ -106,7 +106,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import coil.compose.AsyncImage
-import com.ke.biliblli.api.response.VideoDetailResponse
+import com.ke.biliblli.api.response.VideoDetailViewResponse
 import com.ke.biliblli.common.Screen
 import com.ke.biliblli.common.format
 import com.ke.biliblli.db.entity.CommentEntity
@@ -809,7 +809,7 @@ private fun VerticalIconButtonPreview() {
 private val simpleDateFormat = SimpleDateFormat("yyyy年MM月dd日 HH:mm")
 
 @Composable
-private fun RelatedVideoItem(item: VideoDetailResponse, onClick: () -> Unit) {
+private fun RelatedVideoItem(item: VideoDetailViewResponse, onClick: () -> Unit) {
 
 
     Column(

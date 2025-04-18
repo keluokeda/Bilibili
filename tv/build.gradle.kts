@@ -17,8 +17,8 @@ android {
         applicationId = "com.ke.bilibili.tv"
         minSdk = 21
         targetSdk = 35
-        versionCode = 10
-        versionName = "1.1.0"
+        versionCode = 12
+        versionName = "1.1.2"
 
 
     }
@@ -114,4 +114,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-crashlytics")
+
+    implementation("org.nanohttpd:nanohttpd:2.3.1")
+
 }

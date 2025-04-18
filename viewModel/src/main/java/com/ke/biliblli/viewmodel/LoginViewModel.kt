@@ -27,7 +27,7 @@ class LoginViewModel @Inject constructor(
                 val response = bilibiliRepository.checkLogin(key)
                 if (response.success) {
                     if (response.data!!.success) {
-                        _event.send(LoginEvent.ToMain)
+                        _event.send(LoginEvent.ToSplash)
                     } else {
                         _event.send(LoginEvent.ShowToast(response.data!!.message))
                     }
@@ -96,5 +96,5 @@ sealed interface LoginAction {
 sealed interface LoginEvent {
     data class ShowToast(val message: String) : LoginEvent
 
-    data object ToMain : LoginEvent
+    data object ToSplash : LoginEvent
 }

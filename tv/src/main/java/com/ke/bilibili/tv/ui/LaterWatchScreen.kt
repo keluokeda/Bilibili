@@ -24,7 +24,7 @@ import com.ke.biliblli.viewmodel.LaterWatchViewModel
 
 @Composable
 internal fun LaterWatchRoute(
-    toDetail: (Screen.VideoDetail) -> Unit
+    toDetail: (Any) -> Unit
 ) {
     val viewModel = hiltViewModel<LaterWatchViewModel>()
 
@@ -41,7 +41,7 @@ internal fun LaterWatchRoute(
 private fun LaterWatchScreen(
     state: LaterWatchState,
     retry: () -> Unit,
-    toDetail: (Screen.VideoDetail) -> Unit
+    toDetail: (Any) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         when (state) {
@@ -73,7 +73,7 @@ private fun LaterWatchScreen(
                             it.owner.name
                         )
                         VideoItem(entity) {
-                            toDetail(Screen.VideoDetail(it.bvid))
+                            toDetail(Screen.VideoInfo(it.bvid))
                         }
                     }
                 }

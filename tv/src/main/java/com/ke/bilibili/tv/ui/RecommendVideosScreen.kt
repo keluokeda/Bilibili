@@ -83,9 +83,7 @@ fun RecommendVideosRoute(
 private fun VideoItem(item: HomeRecommendResponse, navigate: (Any) -> Unit = {}) {
 
     Card(onClick = {
-        navigate(Screen.VideoDetail(item.bvid))
-    }, onLongClick = {
-        navigate(Screen.Convert(item.bvid))
+        navigate(Screen.VideoInfo(item.bvid))
     }) {
 
         Box(
@@ -152,7 +150,7 @@ private fun VideoItem(item: HomeRecommendResponse, navigate: (Any) -> Unit = {})
         Text(
             item.title + "\n",
             maxLines = 2,
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(4.dp)
         )
 

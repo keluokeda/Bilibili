@@ -11,7 +11,10 @@ sealed interface Screen {
     data class Main(val userId: Long) : Screen
 
     @Serializable
-    data class VideoDetail(val bvid: String) : Screen
+    data class VideoDetail(val bvid: String, val cid: Long) : Screen
+
+    @Serializable
+    data class VideoInfo(val bvid: String) : Screen
 
     @Serializable
     data object Login : Screen
@@ -19,10 +22,13 @@ sealed interface Screen {
     @Serializable
     data class Comment(val id: Long, val type: Int) : Screen
 
-    @Serializable
-    data class Convert(val bvid: String) : Screen
+//    @Serializable
+//    data class Convert(val bvid: String) : Screen
 
     @Serializable
     data class UserDetail(val id: Long, val name: String, val avatar: String, val sign: String) :
         Screen
+
+    @Serializable
+    data object UploadApk : Screen
 }

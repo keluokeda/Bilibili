@@ -12,6 +12,7 @@ import com.ke.biliblli.api.response.LoginInfoResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
 import com.ke.biliblli.api.response.RelationStatusResponse
+import com.ke.biliblli.api.response.SeasonsListDataResponse
 import com.ke.biliblli.api.response.UserArchivesResponse
 import com.ke.biliblli.api.response.UserFavListResponse
 import com.ke.biliblli.api.response.UserInfoResponse
@@ -122,7 +123,13 @@ interface BilibiliRepository {
     }
 
     suspend fun userVideos(
-        userId: Long, size: Int, index: Int,
+        userId: Long, index: Int, size: Int,
         keywords: String = ""
     ): BaseResponse<UserArchivesResponse>
+
+    suspend fun seasonsSeriesList(
+        userId: Long,
+        index: Int = 1,
+        size: Int = 20
+    ): BaseResponse<SeasonsListDataResponse>
 }
