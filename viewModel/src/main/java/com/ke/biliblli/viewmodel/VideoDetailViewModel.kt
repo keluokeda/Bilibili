@@ -23,6 +23,8 @@ import com.ke.biliblli.common.BilibiliStorage
 import com.ke.biliblli.common.CrashHandler
 import com.ke.biliblli.common.Screen
 import com.ke.biliblli.common.entity.BilibiliDanmaku
+import com.ke.biliblli.common.entity.DanmakuDensity
+import com.ke.biliblli.common.entity.DanmakuFontSize
 import com.ke.biliblli.common.entity.DanmakuPosition
 import com.ke.biliblli.common.entity.VideoResolution
 import com.orhanobut.logger.Logger
@@ -30,6 +32,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -59,6 +63,14 @@ class VideoDetailViewModel @Inject constructor(
 
     private val params = savedStateHandle.toRoute<Screen.VideoDetail>()
 
+
+    private val _config = MutableStateFlow(
+        DanmakuTextConfig(
+            bilibiliStorage.danmakuFontSize, bilibiliStorage.danmakuColorful
+        )
+    )
+
+    val config = _config.asStateFlow()
 
     private val dataSourceFactory: DataSource.Factory =
         DefaultHttpDataSource.Factory()
@@ -130,8 +142,8 @@ class VideoDetailViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val danmakuList = bilibiliRepository.danmakuList(1, id, 1)
-                danmakuList.forEach {
-                    shootDanmaku(it)
+                danmakuList.forEachIndexed { index, item ->
+                    shootDanmaku(index, item)
                 }
             } catch (e: Exception) {
                 CrashHandler.handler(e)
@@ -142,7 +154,16 @@ class VideoDetailViewModel @Inject constructor(
 
     }
 
-    private fun shootDanmaku(danmaku: BilibiliDanmaku) {
+    private val danmakuDensity = bilibiliStorage.danmakuDensity
+
+    private fun shootDanmaku(index: Int, danmaku: BilibiliDanmaku) {
+
+        if (danmakuDensity == DanmakuDensity.Half && index % 2 != 0) {
+            return
+        } else if (danmakuDensity == DanmakuDensity.Less && index % 3 != 0) {
+            return
+        }
+
         viewModelScope.launch {
             delay(danmaku.progress.toLong())
             _event.send(VideoDetailEvent.ShootDanmaku(danmaku))
@@ -244,9 +265,9 @@ class VideoDetailViewModel @Inject constructor(
                     }.sortedByDescending { it.videoResolution.code }
 
 
-                    Logger.d(audio.map {
-                        it.id
-                    })
+//                    Logger.d(audio.map {
+//                        it.id
+//                    })
 
                     val audioList = (audio + (dolby?.audio ?: emptyList())).map { audio ->
                         val triple = audioResolutionPairList.first {
@@ -273,8 +294,10 @@ class VideoDetailViewModel @Inject constructor(
                         currentAudioResolution = audioList.first(),
                         danmakuEnable = bilibiliStorage.danmakuEnable,
                         danmakuPosition = bilibiliStorage.danmakuPosition
-                    )
-                    play(videoList.first().url, audioList.first().url)
+                    ).apply {
+                        play(currentVideoResolution.url, audioList.first().url)
+                    }
+
                 }
 
             } catch (e: Exception) {
@@ -424,6 +447,10 @@ class VideoDetailViewModel @Inject constructor(
 
 }
 
+data class DanmakuTextConfig(
+    val fontSize: DanmakuFontSize,
+    val colorful: Boolean
+)
 
 data class Resolution(
     val videoResolution: VideoResolution,

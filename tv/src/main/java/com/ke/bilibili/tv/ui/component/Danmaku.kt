@@ -106,7 +106,11 @@ fun DanmakuView(
                             ),
                             style = TextStyle(
                                 fontSize = danmakuItem.fontSize.sp,
-                                color = Color.White
+                                color = Color(
+                                    red = item.color.first,
+                                    green = item.color.second,
+                                    blue = item.color.third
+                                )
 //                                Color(danmakuItem.color)
                             ), maxLines = 1
                         )
@@ -156,7 +160,7 @@ fun MeasureUnconstrainedViewWidth(
 @Serializable
 data class DanmakuItem(
     val id: String,
-    val color: Int,
+    val color: Triple<Int, Int, Int>,
     val content: String,
     val fontSize: Int,
     val startY: Int = Random.nextInt(0, 90),
