@@ -21,7 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
-import androidx.compose.material.icons.filled.PlayCircleOutline
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,7 +42,6 @@ import androidx.tv.material3.Button
 import androidx.tv.material3.Card
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
-import androidx.tv.material3.IconButton
 import androidx.tv.material3.ListItem
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
@@ -179,11 +178,11 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                             }
 
                             LaunchedEffect(Unit) {
-                                delay(1000)
+                                delay(10)
                                 focusRequester.requestFocus()
                             }
 
-                            IconButton(onClick = {
+                            Button(onClick = {
                                 navigate(
                                     Screen.VideoDetail(
                                         uiState.info.view.bvid,
@@ -191,13 +190,15 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                                     )
                                 )
                             }, modifier = Modifier.focusRequester(focusRequester)) {
-                                Icon(Icons.Default.PlayCircleOutline, null)
+                                Icon(Icons.Default.PlayCircle, null)
+                                Text("播放")
                             }
 
-                            IconButton(onClick = {
+                            Button(onClick = {
                                 navigate(Screen.Comment(uiState.info.view.aid, 1))
                             }) {
                                 Icon(Icons.AutoMirrored.Filled.Comment, null)
+                                Text("评论")
                             }
                         }
                     }

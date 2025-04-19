@@ -98,10 +98,21 @@ internal fun VideoDetailRoute() {
             viewModel.handleAction(VideoDetailAction.UpdateVideoResolution(it))
         }, {
             viewModel.handleAction(VideoDetailAction.UpdateAudioResolution(it))
-        }
-    ) {
-        sender = it
-    }
+        },
+        {
+            sender = it
+        }, {
+            if (it) {
+                viewModel.handleAction(VideoDetailAction.StartSpeedPlay)
+            } else {
+                viewModel.handleAction(VideoDetailAction.StopSpeedPlay)
+            }
+        }, {
+
+            viewModel.handleAction(VideoDetailAction.TogglePlaying)
+        }, {
+            viewModel.handleAction(VideoDetailAction.Backward)
+        })
 
 
 }
@@ -114,7 +125,10 @@ private fun VideoDetailScreen(
     setControllerVisible: (Boolean) -> Unit,
     updateVideoResolution: (Resolution) -> Unit,
     updateAudioResolution: (AudioResolution) -> Unit,
-    receiver: ((DanmakuItem) -> Unit) -> Unit
+    receiver: ((DanmakuItem) -> Unit) -> Unit,
+    setSpeedPlay: (Boolean) -> Unit,
+    togglePlay: () -> Unit,
+    backward: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         when (uiState) {
@@ -135,9 +149,22 @@ private fun VideoDetailScreen(
                             .fillMaxSize()
                             .onKeyEvent {
                                 Logger.d(it)
+                                Logger.d(it.key.toString())
 
                                 if (it.key == Key.Menu && it.type == KeyEventType.KeyUp) {
                                     setControllerVisible(!uiState.showController)
+                                    true
+                                } else if (it.key == Key.DirectionRight && it.type == KeyEventType.KeyDown) {
+                                    setSpeedPlay(true)
+                                    true
+                                } else if (it.key == Key.DirectionRight && it.type == KeyEventType.KeyUp) {
+                                    setSpeedPlay(false)
+                                    true
+                                } else if (it.key == Key.DirectionCenter && (it.type == KeyEventType.KeyUp)) {
+                                    togglePlay()
+                                    true
+                                } else if (it.key == Key.DirectionLeft && it.type == KeyEventType.KeyUp) {
+                                    backward()
                                     true
                                 }
                                 false

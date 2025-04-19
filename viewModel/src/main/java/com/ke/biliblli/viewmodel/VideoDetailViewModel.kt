@@ -360,6 +360,36 @@ class VideoDetailViewModel @Inject constructor(
                         }
                 }
             }
+
+            VideoDetailAction.StartSpeedPlay -> {
+                player.setPlaybackSpeed(3f)
+            }
+
+            VideoDetailAction.StopSpeedPlay -> {
+                player.setPlaybackSpeed(1f)
+            }
+
+            VideoDetailAction.TogglePlaying -> {
+                val isPlaying = player.isPlaying
+                if (isPlaying) {
+                    player.pause()
+                    _uiState.update {
+                        (it as VideoDetailState.Content).copy(showController = true)
+                    }
+                    hideController(false, Long.MAX_VALUE)
+                } else {
+                    player.play()
+                    _uiState.update {
+                        (it as VideoDetailState.Content).copy(showController = false)
+                    }
+                    hideController(true, 0)
+                }
+            }
+
+            VideoDetailAction.Backward -> {
+                val target = player.currentPosition - 10000
+                player.seekTo(if (target > 0) target else 0)
+            }
         }
     }
 
@@ -441,6 +471,13 @@ sealed interface VideoDetailAction {
 
     data class UpdateAudioResolution(val newValue: AudioResolution) : VideoDetailAction
 
+    data object StartSpeedPlay : VideoDetailAction
+
+    data object StopSpeedPlay : VideoDetailAction
+
+    data object TogglePlaying : VideoDetailAction
+
+    data object Backward : VideoDetailAction
 }
 
 sealed interface VideoDetailEvent {
