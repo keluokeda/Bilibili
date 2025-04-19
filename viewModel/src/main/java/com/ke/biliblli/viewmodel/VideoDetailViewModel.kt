@@ -200,7 +200,10 @@ class VideoDetailViewModel @Inject constructor(
                     currentPosition = player.currentPosition
                 )?.apply {
                     _uiState.value = this
+                    Logger.d("current = ${currentPosition},duration = ${player.duration}")
                 }
+
+
                 delay(1000)
             }
         }
@@ -362,27 +365,35 @@ class VideoDetailViewModel @Inject constructor(
             }
 
             VideoDetailAction.StartSpeedPlay -> {
-                player.setPlaybackSpeed(3f)
+                player.setPlaybackSpeed(5f)
+//                _uiState.update {
+//                    (it as VideoDetailState.Content).copy(showController = true)
+//                }
+//                hideController(false, 5000)
             }
 
             VideoDetailAction.StopSpeedPlay -> {
                 player.setPlaybackSpeed(1f)
+//                _uiState.update {
+//                    (it as VideoDetailState.Content).copy(showController = true)
+//                }
+//                hideController(false, 5000)
             }
 
             VideoDetailAction.TogglePlaying -> {
                 val isPlaying = player.isPlaying
                 if (isPlaying) {
                     player.pause()
-                    _uiState.update {
-                        (it as VideoDetailState.Content).copy(showController = true)
-                    }
-                    hideController(false, Long.MAX_VALUE)
+//                    _uiState.update {
+//                        (it as VideoDetailState.Content).copy(showController = true)
+//                    }
+//                    hideController(false, Long.MAX_VALUE)
                 } else {
                     player.play()
-                    _uiState.update {
-                        (it as VideoDetailState.Content).copy(showController = false)
-                    }
-                    hideController(true, 0)
+//                    _uiState.update {
+//                        (it as VideoDetailState.Content).copy(showController = false)
+//                    }
+//                    hideController(true, 0)
                 }
             }
 

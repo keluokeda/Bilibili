@@ -18,7 +18,7 @@ fun Long.duration(): String {
     val second = this % 60
     val minute = this / 60
 
-    return "${minute}:$second"
+    return "${minute}:${if (second < 10) "0${second}" else second}"
 }
 
 object CrashHandler {

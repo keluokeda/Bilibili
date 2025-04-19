@@ -9,10 +9,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +47,8 @@ import androidx.tv.material3.Text
 import com.ke.bilibili.tv.observeWithLifecycle
 import com.ke.bilibili.tv.ui.component.DanmakuItem
 import com.ke.bilibili.tv.ui.component.DanmakuView
+import com.ke.bilibili.tv.ui.component.ProgressBar
+import com.ke.biliblli.common.duration
 import com.ke.biliblli.common.entity.DanmakuPosition
 import com.ke.biliblli.viewmodel.AudioResolution
 import com.ke.biliblli.viewmodel.Resolution
@@ -297,6 +301,33 @@ private fun VideoDetailScreen(
 
                                 }
                             }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(16.dp)
+                                    .padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+
+                                Text(
+                                    (uiState.player.currentPosition / 1000).duration(),
+                                    color = Color.White
+                                )
+
+                                ProgressBar(
+                                    modifier = Modifier.weight(1f),
+                                    max = uiState.player.duration,
+                                    current = uiState.player.currentPosition
+                                )
+                                Text(
+                                    (uiState.player.duration / 1000).duration(),
+                                    color = Color.White
+                                )
+
+
+                            }
+
 
                         }
                     }
