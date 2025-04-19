@@ -25,6 +25,17 @@ interface BilibiliStorage {
 
     var danmakuColorful: Boolean
 
+
+    /**
+     * 默认首页选项卡
+     */
+    var mainDefaultTab: Int
+
+    /**
+     * 是否直接播放
+     */
+    var directPlay: Boolean
+
 //    var uid: Long
 //
 //    var eid: String?

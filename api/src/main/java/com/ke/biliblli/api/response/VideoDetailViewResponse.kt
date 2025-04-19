@@ -46,7 +46,7 @@ data class VideoViewPage(
     val part: String,
     val duration: Long,
     @JsonNames("first_frame")
-    val firstFrame: String,
+    val firstFrame: String? = null,
     val ctime: Long
 )
 

@@ -306,7 +306,7 @@ private fun DynamicVideoCard(archive: DynamicItemModuleDynamicMajorArchive) {
             contentDescription = null,
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(16 / 9f)
+                .aspectRatio(16 / 9f), contentScale = ContentScale.Crop
         )
         Text(
             archive.title + "\n",

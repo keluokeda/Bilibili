@@ -52,4 +52,7 @@ dependencies {
 
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
+
+    implementation("com.github.franmontiel:PersistentCookieJar:v1.0.1")
+
 }

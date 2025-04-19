@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
@@ -14,12 +15,14 @@ import androidx.tv.material3.MaterialTheme
 import com.ke.bilibili.tv.ui.CommentsRoute
 import com.ke.bilibili.tv.ui.LoginRoute
 import com.ke.bilibili.tv.ui.MainRoute
+import com.ke.bilibili.tv.ui.SearchRoute
 import com.ke.bilibili.tv.ui.SplashRoute
 import com.ke.bilibili.tv.ui.UploadApkRoute
 import com.ke.bilibili.tv.ui.UserDetailRoute
 import com.ke.bilibili.tv.ui.VideoDetailRoute
 import com.ke.bilibili.tv.ui.VideoInfoRoute
 import com.ke.bilibili.tv.ui.theme.BilibiliTheme
+import com.ke.bilibili.tv.viewmodel.MainViewModel
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.Screen
 import dagger.hilt.android.AndroidEntryPoint
@@ -28,6 +31,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+
+    private val mainViewModel by viewModels<MainViewModel>()
 
     @Inject
     lateinit var bilibiliRepository: BilibiliRepository
@@ -76,9 +81,18 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable<Screen.Main> {
-                        MainRoute({
-                            navController.navigate(it)
-                        })
+                        MainRoute {
+                            if (it is Screen.Splash) {
+                                //退出登录
+                                navController.navigate(it) {
+                                    popUpTo<Screen.Main> {
+                                        inclusive = true
+                                    }
+                                }
+                            } else {
+                                navController.navigate(it)
+                            }
+                        }
                     }
 
                     composable<Screen.VideoDetail> {
@@ -119,8 +133,16 @@ class MainActivity : ComponentActivity() {
                             navController.navigate(it)
                         }
                     }
+
+                    composable<Screen.Search> {
+                        SearchRoute {
+                            navController.navigate(it)
+                        }
+                    }
                 }
             }
         }
     }
 }
+
+

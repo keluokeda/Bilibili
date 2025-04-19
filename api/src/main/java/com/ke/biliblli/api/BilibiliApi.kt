@@ -14,6 +14,7 @@ import com.ke.biliblli.api.response.LoginInfoResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
 import com.ke.biliblli.api.response.RelationStatusResponse
+import com.ke.biliblli.api.response.SearchListResponse
 import com.ke.biliblli.api.response.SeasonsListDataResponse
 import com.ke.biliblli.api.response.UserArchivesResponse
 import com.ke.biliblli.api.response.UserFavListResponse
@@ -26,6 +27,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Query
+import retrofit2.http.QueryMap
 import retrofit2.http.Url
 
 interface BilibiliApi {
@@ -249,6 +251,17 @@ interface BilibiliApi {
 
     @GET
     suspend fun request(@Url url: String)
+
+    @GET("x/web-interface/wbi/search/type")
+    suspend fun search(
+        @QueryMap params: Map<String, String>
+    ): BaseResponse<SearchListResponse>
+
+    /**
+     * 退出登录
+     */
+    @POST("https://passport.bilibili.com/login/exit/v2")
+    suspend fun logout(): BaseResponse<EmptyJson>
 
     companion object {
         const val baseUrl = "https://api.bilibili.com/"

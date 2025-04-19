@@ -36,6 +36,22 @@ class BilibiliStorageImpl @Inject constructor(
 //            }
 //        }
 
+    override var directPlay: Boolean
+        get() = sharedPreferences.getBoolean("directPlay", false)
+        set(value) {
+            sharedPreferences.edit(commit = true) {
+                putBoolean("directPlay", value)
+            }
+        }
+
+    override var mainDefaultTab: Int
+        get() = sharedPreferences.getInt("mainDefaultTab", 1)
+        set(value) {
+            sharedPreferences.edit(commit = true) {
+                putInt("mainDefaultTab", value)
+            }
+        }
+
     override var danmakuColorful: Boolean
         get() = sharedPreferences.getBoolean("danmakuColorful", false)
         set(value) {

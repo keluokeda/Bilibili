@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -30,20 +31,21 @@ import androidx.tv.material3.Text
 import com.ke.bilibili.tv.viewmodel.MainAction
 import com.ke.bilibili.tv.viewmodel.MainViewModel
 
-enum class MainTab(val displayName: String, val index: Int) {
-    Recommend("推荐", 0),
-    Dynamic("动态", 1),
-    Fav("我的收藏", 2),
-    LaterWatch("稍后再看", 3),
-    History("历史记录", 4),
-    Settings("设置", 5),
+enum class MainTab(val displayName: String, val index: Int, val canSetDefault: Boolean = false) {
+
+    Search("搜索", 0),
+    Recommend("推荐", 1, true),
+    Dynamic("动态", 2, true),
+    Fav("我的收藏", 3, true),
+    LaterWatch("稍后再看", 4, true),
+    History("历史记录", 5),
+    Settings("设置", 6),
 }
 
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MainRoute(navigate: (Any) -> Unit) {
-    var selectedTab by rememberSaveable { mutableStateOf(MainTab.Recommend) }
 
     val mainViewModel = hiltViewModel<MainViewModel>()
 
@@ -53,6 +55,9 @@ fun MainRoute(navigate: (Any) -> Unit) {
         mutableStateOf(false)
     }
 
+    val defaultTab = mainViewModel.defaultTab
+
+    var selectedTab by rememberSaveable { mutableStateOf(defaultTab) }
 
     BackHandler(enabled = !hasFocus) {
         focusRequester.requestFocus()
@@ -78,11 +83,22 @@ fun MainRoute(navigate: (Any) -> Unit) {
         ) {
             MainTab.entries.forEachIndexed { index, tab ->
                 key(index) {
+                    val focusRequester1 = remember {
+                        FocusRequester()
+                    }
+                    if (tab == defaultTab) {
+//                        focusRequester = FocusRequester()
+
+                        LaunchedEffect(Unit) {
+                            focusRequester1.requestFocus()
+                        }
+                    }
+
                     Tab(selected = tab == selectedTab, onFocus = {
                         selectedTab = tab
                     }, onClick = {
                         mainViewModel.handleAction(MainAction.Refresh(tab))
-                    }) {
+                    }, modifier = Modifier.focusRequester(focusRequester1)) {
                         Text(
                             text = tab.displayName,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
@@ -117,6 +133,8 @@ fun MainRoute(navigate: (Any) -> Unit) {
                 SettingsRoute(navigate)
             } else if (selectedTab == MainTab.Fav) {
                 MyFavRoute(navigate)
+            } else if (selectedTab == MainTab.Search) {
+                SearchRoute(navigate)
             }
         }
 

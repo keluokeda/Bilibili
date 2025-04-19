@@ -31,4 +31,7 @@ sealed interface Screen {
 
     @Serializable
     data object UploadApk : Screen
+
+    @Serializable
+    data class Search(val defaultKeywords: String = "") : Screen
 }

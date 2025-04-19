@@ -161,7 +161,9 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                             modifier = Modifier.padding(16.dp)
                         ) {
                             items(uiState.info.tags) {
-                                AssistChip(onClick = {}) {
+                                AssistChip(onClick = {
+                                    navigate(Screen.Search(it.name))
+                                }) {
                                     Text(it.name)
                                 }
                             }

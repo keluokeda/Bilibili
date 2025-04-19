@@ -56,7 +56,6 @@ import com.ke.biliblli.viewmodel.VideoDetailAction
 import com.ke.biliblli.viewmodel.VideoDetailEvent
 import com.ke.biliblli.viewmodel.VideoDetailState
 import com.ke.biliblli.viewmodel.VideoDetailViewModel
-import com.orhanobut.logger.Logger
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -82,7 +81,8 @@ internal fun VideoDetailRoute() {
                         0xFF, 0xFF, 0xFF
                     ),
                     fontSize = (it.item.fontSize * config.fontSize.ratio).toInt(),
-                    content = it.item.content
+                    content = it.item.content,
+                    duration = config.speed.duration
                 )
                 sender?.invoke(item)
             }
@@ -158,10 +158,8 @@ private fun VideoDetailScreen(
                         Modifier
                             .fillMaxSize()
                             .onKeyEvent {
-                                Logger.d(it)
-                                Logger.d(it.key.toString())
 
-                                if (it.key == Key.Menu && it.type == KeyEventType.KeyUp) {
+                                if ((it.key == Key.Menu || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyUp) {
                                     setControllerVisible(!uiState.showController)
                                     true
                                 } else if (it.key == Key.DirectionRight && it.type == KeyEventType.KeyDown) {
@@ -322,6 +320,40 @@ private fun VideoDetailScreen(
                             }
 
 
+                        }
+                    } else if (uiState.showProgress) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .background(color = Color.Black.copy(alpha = 0.3f))
+                                .padding(16.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(16.dp)
+                                    .padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+
+                                Text(
+                                    (uiState.player.currentPosition / 1000).duration(),
+                                    color = Color.White
+                                )
+
+                                ProgressBar(
+                                    modifier = Modifier.weight(1f),
+                                    max = uiState.player.duration,
+                                    current = uiState.player.currentPosition
+                                )
+                                Text(
+                                    (uiState.player.duration / 1000).duration(),
+                                    color = Color.White
+                                )
+
+
+                            }
                         }
                     }
                 }

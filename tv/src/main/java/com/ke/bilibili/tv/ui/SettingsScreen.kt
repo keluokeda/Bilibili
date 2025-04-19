@@ -1,7 +1,9 @@
 package com.ke.bilibili.tv.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -14,8 +16,10 @@ import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,7 +31,9 @@ import androidx.tv.material3.ListItem
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Switch
 import androidx.tv.material3.Text
+import com.ke.bilibili.tv.observeWithLifecycle
 import com.ke.bilibili.tv.viewmodel.SettingsAction
+import com.ke.bilibili.tv.viewmodel.SettingsEvent
 import com.ke.bilibili.tv.viewmodel.SettingsState
 import com.ke.bilibili.tv.viewmodel.SettingsViewModel
 import com.ke.biliblli.common.Screen
@@ -43,6 +49,20 @@ fun SettingsRoute(navigate: (Any) -> Unit) {
     val viewModel = hiltViewModel<SettingsViewModel>()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val context = LocalContext.current
+
+    viewModel.event.observeWithLifecycle {
+        when (it) {
+            is SettingsEvent.ShowMessage -> {
+                Toast.makeText(context.applicationContext, it.message, Toast.LENGTH_SHORT).show()
+            }
+
+            SettingsEvent.ToSplash -> {
+                navigate(Screen.Splash)
+            }
+        }
+    }
+
     SettingsScreen(state, {
         viewModel.handleAction(SettingsAction.UpdateVideoResolution(it))
     }, {
@@ -57,7 +77,22 @@ fun SettingsRoute(navigate: (Any) -> Unit) {
         viewModel.handleAction(SettingsAction.SetDanmakuEnable(it))
     }, {
         viewModel.handleAction(SettingsAction.SetDanmakuColorful(it))
-    }, navigate)
+    }, navigate, {
+        viewModel.handleAction(SettingsAction.Logout)
+    }, {
+        viewModel.handleAction(SettingsAction.SetDefaultTab(it))
+    })
+
+    if (state.loading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = Color.Black.copy(alpha = 0.3f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("加载中", color = Color.White)
+        }
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalTvMaterial3Api::class)
@@ -71,7 +106,9 @@ private fun SettingsScreen(
     updateDanmakuFontSize: (DanmakuFontSize) -> Unit = {},
     setDanmakuEnable: (Boolean) -> Unit = {},
     setDanmakuColorful: (Boolean) -> Unit = {},
-    navigate: (Any) -> Unit
+    navigate: (Any) -> Unit,
+    logout: () -> Unit,
+    setDefaultTab: (MainTab) -> Unit
 ) {
 
 
@@ -108,6 +145,40 @@ private fun SettingsScreen(
                             updateResolution(it)
                         }, leadingIcon = {
                             if (it == state.videoResolution) {
+                                Icon(Icons.Default.RadioButtonChecked, null)
+                            } else {
+                                Icon(Icons.Default.RadioButtonUnchecked, null)
+
+                            }
+                        }) {
+                            Text(it.displayName)
+                        }
+                    }
+
+                }
+            }
+        }
+
+        item {
+
+            Column(
+                modifier = columnModifier
+            ) {
+                Text(
+                    "首页默认选项卡",
+                    style = titleTextStyle,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    MainTab.entries.filter { it.canSetDefault }.forEach {
+                        FilterChip(selected = it == state.defaultTab, onClick = {
+//                            updateDanmakuFontSize(it)
+                            setDefaultTab(it)
+                        }, leadingIcon = {
+                            if (it == state.defaultTab) {
                                 Icon(Icons.Default.RadioButtonChecked, null)
                             } else {
                                 Icon(Icons.Default.RadioButtonUnchecked, null)
@@ -291,6 +362,12 @@ private fun SettingsScreen(
                 navigate(Screen.UploadApk)
             }, modifier = columnModifier) {
                 Text("上传更新安装包文件")
+            }
+        }
+
+        item {
+            Card(onClick = logout, modifier = columnModifier) {
+                Text("退出登录")
             }
         }
     }

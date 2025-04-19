@@ -19,7 +19,7 @@ data class DynamicResponse(
 @Serializable
 data class DynamicItem(
     @JsonNames("id_str")
-    val id: String,
+    val id: String? = null,
     val type: String,
     val visible: Boolean,
     @JsonNames("modules")

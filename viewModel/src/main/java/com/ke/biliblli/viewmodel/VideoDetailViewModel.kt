@@ -26,6 +26,7 @@ import com.ke.biliblli.common.entity.BilibiliDanmaku
 import com.ke.biliblli.common.entity.DanmakuDensity
 import com.ke.biliblli.common.entity.DanmakuFontSize
 import com.ke.biliblli.common.entity.DanmakuPosition
+import com.ke.biliblli.common.entity.DanmakuSpeed
 import com.ke.biliblli.common.entity.VideoResolution
 import com.orhanobut.logger.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -66,7 +67,9 @@ class VideoDetailViewModel @Inject constructor(
 
     private val _config = MutableStateFlow(
         DanmakuTextConfig(
-            bilibiliStorage.danmakuFontSize, bilibiliStorage.danmakuColorful
+            bilibiliStorage.danmakuFontSize,
+            bilibiliStorage.danmakuColorful,
+            bilibiliStorage.danmakuSpeed
         )
     )
 
@@ -221,7 +224,7 @@ class VideoDetailViewModel @Inject constructor(
                     currentPosition = player.currentPosition
                 )?.apply {
                     _uiState.value = this
-                    Logger.d("current = ${currentPosition},duration = ${player.duration}")
+//                    Logger.d("current = ${currentPosition},duration = ${player.duration}")
                 }
 
 
@@ -389,21 +392,26 @@ class VideoDetailViewModel @Inject constructor(
 
             VideoDetailAction.StartSpeedPlay -> {
                 player.setPlaybackSpeed(5f)
-//                _uiState.update {
-//                    (it as VideoDetailState.Content).copy(showController = true)
-//                }
+                _uiState.update {
+                    (it as VideoDetailState.Content).copy(
+                        showProgress = true,
+                        showController = false
+                    )
+                }
 //                hideController(false, 5000)
             }
 
             VideoDetailAction.StopSpeedPlay -> {
                 player.setPlaybackSpeed(1f)
-//                _uiState.update {
-//                    (it as VideoDetailState.Content).copy(showController = true)
-//                }
+                _uiState.update {
+                    (it as VideoDetailState.Content).copy(showProgress = false)
+                }
 //                hideController(false, 5000)
             }
 
             VideoDetailAction.TogglePlaying -> {
+
+
                 val isPlaying = player.isPlaying
                 if (isPlaying) {
                     player.pause()
@@ -449,7 +457,8 @@ class VideoDetailViewModel @Inject constructor(
 
 data class DanmakuTextConfig(
     val fontSize: DanmakuFontSize,
-    val colorful: Boolean
+    val colorful: Boolean,
+    val speed: DanmakuSpeed
 )
 
 data class Resolution(
@@ -479,6 +488,7 @@ sealed interface VideoDetailState {
         val isFullScreen: Boolean = false,
         val ratio: Float = 16 / 9.0f,
         val showController: Boolean = false,
+        val showProgress: Boolean = false,
         val isPlaying: Boolean = true,
         val currentPosition: Long = 0,
         val playbackState: Int = Player.STATE_BUFFERING

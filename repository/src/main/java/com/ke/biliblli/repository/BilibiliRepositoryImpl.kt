@@ -14,6 +14,7 @@ import com.ke.biliblli.api.response.LoginInfoResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
 import com.ke.biliblli.api.response.RelationStatusResponse
+import com.ke.biliblli.api.response.SearchListResponse
 import com.ke.biliblli.api.response.SeasonsListDataResponse
 import com.ke.biliblli.api.response.UserArchivesResponse
 import com.ke.biliblli.api.response.UserFavListResponse
@@ -23,6 +24,7 @@ import com.ke.biliblli.api.response.VideoUrlResponse
 import com.ke.biliblli.api.response.VideoViewResponse
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.BilibiliStorage
+import com.ke.biliblli.common.KePersistentCookieJar
 import com.ke.biliblli.common.entity.WbiParams
 import com.ke.biliblli.common.http.BilibiliProtoApi
 import java.net.URLEncoder
@@ -38,7 +40,8 @@ class BilibiliRepositoryImpl @Inject constructor(
     private val bilibiliApi: BilibiliApi,
     override val bilibiliProtoApi: BilibiliProtoApi,
     private val bilibiliHtmlApi: BilibiliHtmlApi,
-    private val bilibiliStorage: BilibiliStorage
+    private val bilibiliStorage: BilibiliStorage,
+    private val kePersistentCookieJar: KePersistentCookieJar
 ) :
     BilibiliRepository {
 
@@ -115,6 +118,38 @@ class BilibiliRepositoryImpl @Inject constructor(
         val sign = WbiUtil.enc(treeMap, wbiParams.image, wbiParams.sub)
 
         return bilibiliApi.videoInfo(bvid, now, sign!!)
+    }
+
+
+    override suspend fun logout() {
+        kePersistentCookieJar.deleteAllCookie()
+    }
+
+    override suspend fun search(keywords: String, index: Int): BaseResponse<SearchListResponse> {
+        var current = bilibiliStorage.wbiParams
+
+        val wbiParams = if (current?.canUse() != true) {
+            createAndSaveWbiParams()
+        } else {
+            current
+        }
+
+
+        val now = System.currentTimeMillis() / 1000
+        val treeMap = TreeMap<String, Any>()
+        treeMap.put("search_type", "video")
+        treeMap.put("keyword", keywords)
+        treeMap.put("page", index.toString())
+        val sign = WbiUtil.enc(treeMap, wbiParams.image, wbiParams.sub)
+        treeMap.put("wst", now.toString())
+        treeMap.put("w_rid", sign ?: "")
+
+        val map = mutableMapOf<String, String>()
+        treeMap.forEach {
+            map[it.key] = it.value.toString()
+        }
+
+        return bilibiliApi.search(map)
     }
 
     override suspend fun loginInfo(): BaseResponse<LoginInfoResponse> {

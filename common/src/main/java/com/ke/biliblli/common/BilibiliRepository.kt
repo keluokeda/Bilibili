@@ -12,6 +12,7 @@ import com.ke.biliblli.api.response.LoginInfoResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
 import com.ke.biliblli.api.response.RelationStatusResponse
+import com.ke.biliblli.api.response.SearchListResponse
 import com.ke.biliblli.api.response.SeasonsListDataResponse
 import com.ke.biliblli.api.response.UserArchivesResponse
 import com.ke.biliblli.api.response.UserFavListResponse
@@ -121,6 +122,12 @@ interface BilibiliRepository {
             )
         }
     }
+
+
+    suspend fun logout()
+
+
+    suspend fun search(keywords: String, index: Int): BaseResponse<SearchListResponse>
 
     suspend fun userVideos(
         userId: Long, index: Int, size: Int,

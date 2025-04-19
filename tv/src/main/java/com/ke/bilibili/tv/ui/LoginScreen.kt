@@ -63,7 +63,7 @@ internal fun LoginRoute(
     })
 }
 
-private val qrSize = 480.dp
+private val qrSize = 640.dp
 private val buttonWidth = 150.dp
 
 @Composable

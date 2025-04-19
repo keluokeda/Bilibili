@@ -18,7 +18,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.Cookie
-import okhttp3.CookieJar
 import okhttp3.HttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -27,6 +26,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.converter.protobuf.ProtoConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 
@@ -44,6 +44,12 @@ class KePersistentCookieJar(
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
         super.saveFromResponse(url, cookies)
     }
+
+    fun deleteAllCookie() {
+        clear()
+    }
+
+
 }
 
 @Module
@@ -52,7 +58,7 @@ object CommonModule {
 
     @Provides
     @Singleton
-    fun provideCookieJar(@ApplicationContext context: Context): CookieJar {
+    fun provideCookieJar(@ApplicationContext context: Context): KePersistentCookieJar {
 
 
         return KePersistentCookieJar(SetCookieCache(), SharedPrefsCookiePersistor(context))
@@ -62,7 +68,7 @@ object CommonModule {
     @Provides
     @Singleton
     fun provideHttpClient(
-        cookieJar: CookieJar,
+        cookieJar: KePersistentCookieJar,
         bilibiliHttpInterceptor: BilibiliHttpInterceptor
     ): OkHttpClient {
         val logger = HttpLoggingInterceptor {
@@ -72,6 +78,10 @@ object CommonModule {
         }
         return OkHttpClient
             .Builder()
+            .callTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(30, TimeUnit.SECONDS)
             .cookieJar(cookieJar)
             .addInterceptor(bilibiliHttpInterceptor)
             .addInterceptor(logger)

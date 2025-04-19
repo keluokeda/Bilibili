@@ -1,5 +1,8 @@
 package com.ke.bilibili.tv.viewmodel
 
+import androidx.lifecycle.viewModelScope
+import com.ke.bilibili.tv.ui.MainTab
+import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.BilibiliStorage
 import com.ke.biliblli.common.entity.DanmakuDensity
 import com.ke.biliblli.common.entity.DanmakuFontSize
@@ -8,12 +11,14 @@ import com.ke.biliblli.common.entity.DanmakuSpeed
 import com.ke.biliblli.common.entity.VideoResolution
 import com.ke.biliblli.viewmodel.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val bilibiliStorage: BilibiliStorage
-) : BaseViewModel<SettingsState, SettingsAction, Unit>(
+    private val bilibiliStorage: BilibiliStorage,
+    private val bilibiliRepository: BilibiliRepository,
+) : BaseViewModel<SettingsState, SettingsAction, SettingsEvent>(
     SettingsState(
         VideoResolution.P1080, DanmakuSpeed.Normal, DanmakuDensity.Normal,
         DanmakuPosition.Full, DanmakuFontSize.Medium, false, false
@@ -33,7 +38,8 @@ class SettingsViewModel @Inject constructor(
             bilibiliStorage.danmakuPosition,
             bilibiliStorage.danmakuFontSize,
             bilibiliStorage.danmakuEnable,
-            bilibiliStorage.danmakuColorful
+            bilibiliStorage.danmakuColorful,
+            defaultTab = MainTab.entries.first { it.index == bilibiliStorage.mainDefaultTab }
         )
     }
 
@@ -66,6 +72,41 @@ class SettingsViewModel @Inject constructor(
             is SettingsAction.SetDanmakuColorful -> {
                 bilibiliStorage.danmakuColorful = action.value
             }
+
+            SettingsAction.Logout -> {
+                viewModelScope.launch {
+                    bilibiliRepository.logout()
+                    _event.send(SettingsEvent.ToSplash)
+                }
+//                viewModelScope.launch {
+//                    _uiState.update {
+//                        it.copy(loading = true)
+//                    }
+//
+//                    try {
+//                        val response = bilibiliRepository.logout()
+//
+//                        if (response.success) {
+//                            _event.send(SettingsEvent.ToSplash)
+//                        } else {
+//                            _event.send(SettingsEvent.ShowMessage(response.message))
+//                        }
+//
+//                    } catch (e: Exception) {
+//                        _event.send(SettingsEvent.ShowMessage("网络故障"))
+//
+//                        CrashHandler.handler(e)
+//                    }
+//                    _uiState.update {
+//                        it.copy(loading = false)
+//                    }
+//
+//                }
+            }
+
+            is SettingsAction.SetDefaultTab -> {
+                bilibiliStorage.mainDefaultTab = action.value.index
+            }
         }
 
         refresh()
@@ -79,7 +120,9 @@ data class SettingsState(
     val danmakuPosition: DanmakuPosition,
     val danmakuFontSize: DanmakuFontSize,
     val danmakuEnable: Boolean,
-    val danmakuColorful: Boolean
+    val danmakuColorful: Boolean,
+    val loading: Boolean = false,
+    val defaultTab: MainTab = MainTab.Recommend
 )
 
 sealed interface SettingsAction {
@@ -97,5 +140,15 @@ sealed interface SettingsAction {
 
     data class SetDanmakuColorful(val value: Boolean) : SettingsAction
 
+    data object Logout : SettingsAction
 
+
+    data class SetDefaultTab(val value: MainTab) : SettingsAction
+
+}
+
+sealed interface SettingsEvent {
+    data object ToSplash : SettingsEvent
+
+    data class ShowMessage(val message: String) : SettingsEvent
 }
