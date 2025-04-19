@@ -59,7 +59,9 @@ import com.ke.biliblli.viewmodel.VideoDetailViewModel
 
 @OptIn(UnstableApi::class)
 @Composable
-internal fun VideoDetailRoute() {
+internal fun VideoDetailRoute(
+    back: () -> Unit
+) {
     val viewModel = hiltViewModel<VideoDetailViewModel>()
 
 
@@ -89,6 +91,10 @@ internal fun VideoDetailRoute() {
 
             is VideoDetailEvent.ShowVideoResolutionListDialog -> {
 
+            }
+
+            VideoDetailEvent.BackToInfo -> {
+                back()
             }
         }
     }

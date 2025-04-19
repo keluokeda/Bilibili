@@ -131,6 +131,12 @@ class VideoDetailViewModel @Inject constructor(
             super.onPlaybackStateChanged(playbackState)
             Logger.d("onPlaybackStateChanged $playbackState")
 
+            if (playbackState == Player.STATE_ENDED) {
+                viewModelScope.launch {
+                    _event.send(VideoDetailEvent.BackToInfo)
+                }
+            }
+
             (uiState.value as? VideoDetailState.Content)?.copy(
                 playbackState = playbackState
             )?.apply {
@@ -536,4 +542,6 @@ sealed interface VideoDetailEvent {
     ) : VideoDetailEvent
 
     data class ShootDanmaku(val item: BilibiliDanmaku) : VideoDetailEvent
+
+    data object BackToInfo : VideoDetailEvent
 }

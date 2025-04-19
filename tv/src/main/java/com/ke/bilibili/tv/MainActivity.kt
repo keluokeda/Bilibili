@@ -96,7 +96,9 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable<Screen.VideoDetail> {
-                        VideoDetailRoute()
+                        VideoDetailRoute {
+                            navController.popBackStack()
+                        }
                     }
 
                     composable<Screen.UploadApk> {
