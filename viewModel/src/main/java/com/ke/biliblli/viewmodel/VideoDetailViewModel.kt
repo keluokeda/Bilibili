@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.abs
 
 
 private const val minRatio = 1.0f
@@ -313,7 +314,7 @@ class VideoDetailViewModel @Inject constructor(
                         play(
                             currentVideoResolution.url,
                             audioList.first().url,
-                            startPositionMs = response.lastPlayTime
+                            startPositionMs = if (abs(response.dash.duration - response.lastPlayTime / 1000) < 5) 0 else response.lastPlayTime
                         )
                     }
 

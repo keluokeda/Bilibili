@@ -29,6 +29,7 @@ data class VideoUrlResponse(
 
 @Serializable
 data class VideoDash(
+    //秒
     val duration: Long,
     val video: List<DashVideo>,
     val audio: List<DashAudio>,

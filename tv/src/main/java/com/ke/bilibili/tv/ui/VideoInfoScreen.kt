@@ -1,16 +1,15 @@
 package com.ke.bilibili.tv.ui
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -18,12 +17,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,7 +49,6 @@ import coil.compose.AsyncImage
 import com.ke.biliblli.common.Screen
 import com.ke.biliblli.viewmodel.TvVideoInfoState
 import com.ke.biliblli.viewmodel.TvVideoInfoViewModel
-import kotlinx.coroutines.delay
 
 
 @Composable
@@ -89,12 +85,16 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
 
                 Box(modifier = Modifier.fillMaxSize()) {
 
-                    AsyncImage(
-                        model = backgroundImage,
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
+                    Crossfade(backgroundImage) {
+                        AsyncImage(
+                            model = it,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
+
 
 
                     LazyColumn(
@@ -203,7 +203,13 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
 
                         item {
                             Row(
-                                modifier = Modifier.padding(16.dp),
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .onFocusChanged {
+                                        if (it.hasFocus) {
+                                            backgroundImage = uiState.info.view.pic
+                                        }
+                                    },
                                 horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
                                 val focusRequester = remember {
@@ -250,6 +256,10 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                                             .clip(CircleShape)
                                             .background(color = Color.Gray)
                                     )
+                                }, modifier = Modifier.onFocusChanged {
+                                    if (it.hasFocus) {
+                                        backgroundImage = uiState.info.view.pic
+                                    }
                                 }
                             )
                         }
@@ -261,6 +271,11 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                                 modifier = Modifier
                                     .padding(16.dp)
                                     .padding(horizontal = 8.dp)
+                                    .onFocusChanged {
+                                        if (it.hasFocus) {
+                                            backgroundImage = uiState.info.view.pic
+                                        }
+                                    }
                             ) {
                                 items(uiState.info.tags) {
                                     AssistChip(onClick = {
