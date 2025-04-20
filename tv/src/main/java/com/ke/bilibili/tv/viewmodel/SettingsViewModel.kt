@@ -1,5 +1,6 @@
 package com.ke.bilibili.tv.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.viewModelScope
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.BilibiliStorage
@@ -11,13 +12,16 @@ import com.ke.biliblli.common.entity.VideoResolution
 import com.ke.biliblli.common.event.MainTab
 import com.ke.biliblli.viewmodel.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val bilibiliStorage: BilibiliStorage,
     private val bilibiliRepository: BilibiliRepository,
+    @ApplicationContext private val context: Context
 ) : BaseViewModel<SettingsState, SettingsAction, SettingsEvent>(
     SettingsState(
         VideoResolution.P1080, DanmakuSpeed.Normal, DanmakuDensity.Normal,
@@ -39,7 +43,8 @@ class SettingsViewModel @Inject constructor(
             bilibiliStorage.danmakuFontSize,
             bilibiliStorage.danmakuEnable,
             bilibiliStorage.danmakuColorful,
-            defaultTab = MainTab.entries.first { it.index == bilibiliStorage.mainDefaultTab }
+            defaultTab = MainTab.entries.first { it.index == bilibiliStorage.mainDefaultTab },
+            cacheSize = context.cacheSize()
         )
     }
 
@@ -107,10 +112,41 @@ class SettingsViewModel @Inject constructor(
             is SettingsAction.SetDefaultTab -> {
                 bilibiliStorage.mainDefaultTab = action.value.index
             }
+
+            SettingsAction.ClearCache -> {
+//                context.cacheDir?.delete()
+//                context.externalCacheDir?.delete()
+                clearCache(context)
+            }
         }
 
         refresh()
     }
+}
+
+fun clearCache(context: Context): Boolean {
+    return try {
+        // 清除内部缓存
+        deleteRecursive(context.cacheDir)
+        // 清除外部缓存（如果有）
+        context.externalCacheDir?.let { deleteRecursive(it) }
+        true
+    } catch (e: Exception) {
+        e.printStackTrace()
+        false
+    }
+}
+
+/**
+ * 递归删除目录/文件
+ */
+private fun deleteRecursive(file: File?) {
+    if (file == null || !file.exists()) return
+
+    if (file.isDirectory) {
+        file.listFiles()?.forEach { deleteRecursive(it) }
+    }
+    file.delete()
 }
 
 data class SettingsState(
@@ -122,7 +158,8 @@ data class SettingsState(
     val danmakuEnable: Boolean,
     val danmakuColorful: Boolean,
     val loading: Boolean = false,
-    val defaultTab: MainTab = MainTab.Recommend
+    val defaultTab: MainTab = MainTab.Recommend,
+    val cacheSize: String = "0MB"
 )
 
 sealed interface SettingsAction {
@@ -145,10 +182,54 @@ sealed interface SettingsAction {
 
     data class SetDefaultTab(val value: MainTab) : SettingsAction
 
+    data object ClearCache : SettingsAction
+
 }
 
 sealed interface SettingsEvent {
     data object ToSplash : SettingsEvent
 
     data class ShowMessage(val message: String) : SettingsEvent
+}
+
+fun Context.cacheSize(): String {
+    return formatCacheSize(getCacheSize(this))
+}
+
+/**
+ * 获取应用缓存大小（单位：字节）
+ */
+private fun getCacheSize(context: Context): Long {
+    // 内部缓存目录（/data/data/包名/cache）
+    val internalCacheDir = context.cacheDir
+    // 外部缓存目录（Android 11+ 后已废弃，但部分应用仍可能使用）
+    val externalCacheDir = context.externalCacheDir
+
+    // 计算总缓存大小
+    return calculateSize(internalCacheDir) + calculateSize(externalCacheDir)
+}
+
+/**
+ * 递归计算目录大小
+ */
+private fun calculateSize(file: File?): Long {
+    if (file == null || !file.exists()) return 0
+
+    return if (file.isDirectory) {
+        file.listFiles()?.sumOf { calculateSize(it) } ?: 0
+    } else {
+        file.length()
+    }
+}
+
+/**
+ * 格式化缓存大小（例如：1.23 MB）
+ */
+private fun formatCacheSize(sizeBytes: Long): String {
+    return when {
+        sizeBytes >= 1_000_000_000 -> "%.2f GB".format(sizeBytes / 1e9)
+        sizeBytes >= 1_000_000 -> "%.2f MB".format(sizeBytes / 1e6)
+        sizeBytes >= 1_000 -> "%.2f KB".format(sizeBytes / 1e3)
+        else -> "$sizeBytes B"
+    }
 }

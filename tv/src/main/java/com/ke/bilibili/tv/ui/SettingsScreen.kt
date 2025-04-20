@@ -82,6 +82,8 @@ fun SettingsRoute(navigate: (Any) -> Unit) {
         viewModel.handleAction(SettingsAction.Logout)
     }, {
         viewModel.handleAction(SettingsAction.SetDefaultTab(it))
+    }, {
+        viewModel.handleAction(SettingsAction.ClearCache)
     })
 
     if (state.loading) {
@@ -109,7 +111,8 @@ private fun SettingsScreen(
     setDanmakuColorful: (Boolean) -> Unit = {},
     navigate: (Any) -> Unit,
     logout: () -> Unit,
-    setDefaultTab: (MainTab) -> Unit
+    setDefaultTab: (MainTab) -> Unit,
+    clearCache: () -> Unit
 ) {
 
 
@@ -369,6 +372,12 @@ private fun SettingsScreen(
         item {
             Card(onClick = logout, modifier = columnModifier) {
                 Text("退出登录")
+            }
+        }
+
+        item {
+            Card(onClick = clearCache, modifier = columnModifier) {
+                Text("清除缓存：${state.cacheSize}")
             }
         }
     }
