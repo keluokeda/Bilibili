@@ -28,7 +28,6 @@ import com.ke.biliblli.common.entity.DanmakuFontSize
 import com.ke.biliblli.common.entity.DanmakuPosition
 import com.ke.biliblli.common.entity.DanmakuSpeed
 import com.ke.biliblli.common.entity.VideoResolution
-import com.orhanobut.logger.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
@@ -104,7 +103,7 @@ class VideoDetailViewModel @Inject constructor(
 
     private val playerListener = object : Player.Listener {
         override fun onVideoSizeChanged(videoSize: VideoSize) {
-            Logger.d("视频分辨率变化 ${videoSize.width} ${videoSize.height}")
+//            Logger.d("视频分辨率变化 ${videoSize.width} ${videoSize.height}")
 
             if (videoSize.height <= 0) {
                 return
@@ -129,7 +128,7 @@ class VideoDetailViewModel @Inject constructor(
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             super.onPlaybackStateChanged(playbackState)
-            Logger.d("onPlaybackStateChanged $playbackState")
+//            Logger.d("onPlaybackStateChanged $playbackState")
 
             if (playbackState == Player.STATE_ENDED) {
                 viewModelScope.launch {

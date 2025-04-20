@@ -25,12 +25,15 @@ import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -79,51 +82,165 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
             }
 
             is TvVideoInfoState.Success -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp)
-                ) {
 
-                    item {
-                        val height = 300.dp * 9 / 16f
+                var backgroundImage by remember {
+                    mutableStateOf(uiState.info.view.pic)
+                }
 
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(height)
-                        ) {
-                            AsyncImage(
-                                model = uiState.info.view.pic,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .width(300.dp)
-                                    .height(height)
-                                    .clip(RoundedCornerShape(8.dp))
+                Box(modifier = Modifier.fillMaxSize()) {
+
+                    AsyncImage(
+                        model = backgroundImage,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color = Color.Black.copy(alpha = .7f))
+                            .padding(
+                                24.dp
                             )
-                            Spacer(modifier = Modifier.width(24.dp))
+                    ) {
 
+                        item {
                             Column(
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .height(
-                                        height
-                                    )
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Text(
                                     uiState.info.view.title,
-                                    style = MaterialTheme.typography.headlineSmall.copy(color = Color.White)
+                                    style = MaterialTheme.typography.headlineMedium.copy(color = Color.White)
                                 )
-                                ListItem(selected = false, onClick = {
-                                    val owner = uiState.info.view.owner
+
+                                if (uiState.info.view.desc.isNotEmpty() && uiState.info.view.desc != "-") {
+                                    Text(
+                                        uiState.info.view.desc,
+                                        maxLines = 2,
+                                        style = MaterialTheme.typography.titleLarge.copy(color = Color.White)
+                                    )
+                                }
+
+
+                            }
+                        }
+
+//                        item {
+//                            val height = 300.dp * 9 / 16f
+//
+//                            Row(
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                                    .height(height)
+//                            ) {
+//                                AsyncImage(
+//                                    model = uiState.info.view.pic,
+//                                    contentDescription = null,
+//                                    modifier = Modifier
+//                                        .width(300.dp)
+//                                        .height(height)
+//                                        .clip(RoundedCornerShape(8.dp))
+//                                )
+//                                Spacer(modifier = Modifier.width(24.dp))
+//
+//                                Column(
+//                                    modifier = Modifier
+//                                        .weight(1f)
+//                                        .height(
+//                                            height
+//                                        )
+//                                ) {
+//                                    Text(
+//                                        uiState.info.view.title,
+//                                        style = MaterialTheme.typography.headlineSmall.copy(color = Color.White)
+//                                    )
+//                                    ListItem(selected = false, onClick = {
+//                                        val owner = uiState.info.view.owner
+//                                        navigate(
+//                                            Screen.UserDetail(
+//                                                owner.mid,
+//                                                owner.name,
+//                                                owner.face,
+//                                                ""
+//                                            )
+//                                        )
+//                                    }, leadingContent = {
+//                                        AsyncImage(
+//                                            model = uiState.info.view.owner.face,
+//                                            contentDescription = null,
+//                                            modifier = Modifier
+//                                                .size(40.dp)
+//                                                .clip(CircleShape)
+//                                                .background(Color.Gray),
+//                                            contentScale = ContentScale.Crop
+//                                        )
+//                                    }, headlineContent = {
+//
+//                                        Text(
+//                                            uiState.info.view.owner.name,
+//                                            style = MaterialTheme.typography.titleMedium
+//                                        )
+//                                    }
+//                                    )
+//
+//
+//                                    Text(
+//                                        uiState.info.view.desc,
+//                                        style =
+//                                            MaterialTheme.typography.bodyLarge.copy(color = Color.White),
+//                                        modifier = Modifier
+//                                            .weight(1f)
+//                                    )
+//                                }
+//                            }
+//                        }
+
+
+                        item {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                val focusRequester = remember {
+                                    FocusRequester()
+                                }
+
+//                                LaunchedEffect(Unit) {
+//                                    delay(10)
+//                                    focusRequester.requestFocus()
+//                                }
+
+                                Button(onClick = {
                                     navigate(
-                                        Screen.UserDetail(
-                                            owner.mid,
-                                            owner.name,
-                                            owner.face,
-                                            ""
+                                        Screen.VideoDetail(
+                                            uiState.info.view.bvid,
+                                            uiState.info.view.cid,
+                                            uiState.info.view.aid
                                         )
                                     )
+                                }, modifier = Modifier.focusRequester(focusRequester)) {
+                                    Icon(Icons.Default.PlayCircle, null)
+                                    Text("播放")
+                                }
+
+                                Button(onClick = {
+                                    navigate(Screen.Comment(uiState.info.view.aid, 1))
+                                }) {
+                                    Icon(Icons.AutoMirrored.Filled.Comment, null)
+                                    Text("评论")
+                                }
+                            }
+                        }
+
+                        item {
+                            ListItem(
+                                selected = false, onClick = {}, headlineContent = {
+                                    Text(uiState.info.view.owner.name)
                                 }, leadingContent = {
                                     AsyncImage(
                                         model = uiState.info.view.owner.face,
@@ -131,136 +248,137 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                                         modifier = Modifier
                                             .size(40.dp)
                                             .clip(CircleShape)
-                                            .background(Color.Gray),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                }, headlineContent = {
-
-                                    Text(
-                                        uiState.info.view.owner.name,
-                                        style = MaterialTheme.typography.titleMedium
+                                            .background(color = Color.Gray)
                                     )
                                 }
-                                )
-
-
-                                Text(
-                                    uiState.info.view.desc,
-                                    style =
-                                        MaterialTheme.typography.bodyLarge.copy(color = Color.White),
-                                    modifier = Modifier
-                                        .weight(1f)
-                                )
-                            }
-                        }
-                    }
-
-                    item {
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.padding(16.dp)
-                        ) {
-                            items(uiState.info.tags) {
-                                AssistChip(onClick = {
-                                    navigate(Screen.Search(it.name))
-                                }) {
-                                    Text(it.name)
-                                }
-                            }
-                        }
-                    }
-
-                    item {
-                        Row(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            val focusRequester = remember {
-                                FocusRequester()
-                            }
-
-                            LaunchedEffect(Unit) {
-                                delay(10)
-                                focusRequester.requestFocus()
-                            }
-
-                            Button(onClick = {
-                                navigate(
-                                    Screen.VideoDetail(
-                                        uiState.info.view.bvid,
-                                        uiState.info.view.cid,
-                                        uiState.info.view.aid
-                                    )
-                                )
-                            }, modifier = Modifier.focusRequester(focusRequester)) {
-                                Icon(Icons.Default.PlayCircle, null)
-                                Text("播放")
-                            }
-
-                            Button(onClick = {
-                                navigate(Screen.Comment(uiState.info.view.aid, 1))
-                            }) {
-                                Icon(Icons.AutoMirrored.Filled.Comment, null)
-                                Text("评论")
-                            }
-                        }
-                    }
-
-                    if (uiState.pageList.size > 1) {
-                        item {
-                            Text(
-                                "视频选集",
-                                style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
-                                modifier = Modifier.padding(16.dp)
                             )
                         }
 
+
                         item {
                             LazyRow(
-                                contentPadding = PaddingValues(16.dp),
-                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .padding(horizontal = 8.dp)
                             ) {
-                                items(uiState.pageList) {
-                                    Card(
-                                        onClick = {
-//                                            navigate(Screen.VideoInfo(it.bvid))
-                                            navigate(
-                                                Screen.VideoDetail(
-                                                    uiState.info.view.bvid,
-                                                    it.cid,
-                                                    uiState.info.view.aid
-                                                )
-                                            )
-                                        },
-                                        modifier = Modifier
-                                            .width(240.dp)
-                                    ) {
+                                items(uiState.info.tags) {
+                                    AssistChip(onClick = {
+                                        navigate(Screen.Search(it.name))
+                                    }) {
+                                        Text(it.name)
+                                    }
+                                }
+                            }
+                        }
 
-                                        if (it.firstFrame != null) {
+
+                        if (uiState.pageList.size > 1) {
+                            item {
+                                Text(
+                                    "视频选集",
+                                    style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
+
+                            item {
+                                LazyRow(
+                                    contentPadding = PaddingValues(16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                ) {
+                                    items(uiState.pageList) {
+                                        Card(
+                                            onClick = {
+//                                            navigate(Screen.VideoInfo(it.bvid))
+                                                navigate(
+                                                    Screen.VideoDetail(
+                                                        uiState.info.view.bvid,
+                                                        it.cid,
+                                                        uiState.info.view.aid
+                                                    )
+                                                )
+                                            },
+                                            modifier = Modifier
+                                                .width(240.dp)
+                                                .onFocusChanged { focusState ->
+                                                    if (focusState.isFocused && it.firstFrame != null) {
+                                                        backgroundImage = it.firstFrame!!
+                                                    }
+                                                }
+                                        ) {
+
+                                            if (it.firstFrame != null) {
+                                                AsyncImage(
+                                                    model = it.firstFrame,
+                                                    contentDescription = null,
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .aspectRatio(16 / 9f),
+                                                    contentScale = ContentScale.Crop
+                                                )
+                                            }
+                                            Text(
+                                                it.part,
+                                                maxLines = 1,
+                                                modifier = Modifier.padding(8.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (uiState.info.view.ugcSeason != null) {
+                            item {
+                                Text(
+                                    "合集",
+                                    style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
+
+                            item {
+                                LazyRow(
+                                    contentPadding = PaddingValues(16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                ) {
+                                    items(uiState.info.view.ugcSeason!!.allVideos()) {
+                                        Card(
+                                            onClick = {
+                                                navigate(Screen.VideoInfo(it.bvid))
+                                            },
+                                            modifier = Modifier
+                                                .width(240.dp)
+                                                .onFocusChanged { focusState ->
+                                                    if (focusState.isFocused) {
+                                                        backgroundImage = it.arc.pic
+                                                    }
+                                                }
+                                        ) {
                                             AsyncImage(
-                                                model = it.firstFrame,
+                                                model = it.arc.pic,
                                                 contentDescription = null,
                                                 modifier = Modifier
                                                     .fillMaxWidth()
                                                     .aspectRatio(16 / 9f),
                                                 contentScale = ContentScale.Crop
                                             )
+                                            Text(
+                                                it.title,
+                                                maxLines = 1,
+                                                modifier = Modifier.padding(8.dp)
+                                            )
                                         }
-                                        Text(
-                                            it.part,
-                                            maxLines = 1,
-                                            modifier = Modifier.padding(8.dp)
-                                        )
                                     }
                                 }
                             }
                         }
-                    }
 
-                    if (uiState.info.view.ugcSeason != null) {
+
                         item {
                             Text(
-                                "合集",
+                                "推荐视频",
                                 style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
                                 modifier = Modifier.padding(16.dp)
                             )
@@ -271,16 +389,21 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                                 contentPadding = PaddingValues(16.dp),
                                 horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
-                                items(uiState.info.view.ugcSeason!!.allVideos()) {
+                                items(uiState.info.related) {
                                     Card(
                                         onClick = {
                                             navigate(Screen.VideoInfo(it.bvid))
                                         },
                                         modifier = Modifier
                                             .width(240.dp)
+                                            .onFocusChanged { focusState ->
+                                                if (focusState.isFocused) {
+                                                    backgroundImage = it.pic
+                                                }
+                                            }
                                     ) {
                                         AsyncImage(
-                                            model = it.arc.pic,
+                                            model = it.pic,
                                             contentDescription = null,
                                             modifier = Modifier
                                                 .fillMaxWidth()
@@ -299,43 +422,8 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                     }
 
 
-                    item {
-                        Text(
-                            "推荐视频",
-                            style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
-
-                    item {
-                        LazyRow(
-                            contentPadding = PaddingValues(16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            items(uiState.info.related) {
-                                Card(
-                                    onClick = {
-                                        navigate(Screen.VideoInfo(it.bvid))
-                                    },
-                                    modifier = Modifier
-                                        .width(240.dp)
-                                ) {
-                                    AsyncImage(
-                                        model = it.pic,
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .aspectRatio(16 / 9f),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                    Text(
-                                        it.title, maxLines = 1, modifier = Modifier.padding(8.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
                 }
+
             }
         }
 
