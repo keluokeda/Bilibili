@@ -235,14 +235,17 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                                         modifier = Modifier
                                             .width(240.dp)
                                     ) {
-                                        AsyncImage(
-                                            model = it.firstFrame,
-                                            contentDescription = null,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .aspectRatio(16 / 9f),
-                                            contentScale = ContentScale.Crop
-                                        )
+
+                                        if (it.firstFrame != null) {
+                                            AsyncImage(
+                                                model = it.firstFrame,
+                                                contentDescription = null,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .aspectRatio(16 / 9f),
+                                                contentScale = ContentScale.Crop
+                                            )
+                                        }
                                         Text(
                                             it.part,
                                             maxLines = 1,

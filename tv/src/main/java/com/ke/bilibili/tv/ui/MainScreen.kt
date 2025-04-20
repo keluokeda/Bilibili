@@ -37,6 +37,7 @@ import com.ke.biliblli.common.event.MainTab
 @Composable
 fun MainRoute(navigate: (Any) -> Unit) {
 
+
     val mainViewModel = hiltViewModel<MainViewModel>()
 
     val focusRequester = remember { FocusRequester() }
