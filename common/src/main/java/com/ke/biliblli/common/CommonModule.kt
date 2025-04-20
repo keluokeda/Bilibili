@@ -19,6 +19,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.Cookie
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -49,6 +50,13 @@ class KePersistentCookieJar(
         clear()
     }
 
+
+    fun getCsrf(): String {
+        return loadForRequest(BilibiliApi.baseUrl.toHttpUrl())
+            .firstOrNull {
+                it.name == "bili_jct"
+            }?.value ?: ""
+    }
 
 }
 

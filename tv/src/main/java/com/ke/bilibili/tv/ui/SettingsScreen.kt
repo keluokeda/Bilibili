@@ -42,6 +42,7 @@ import com.ke.biliblli.common.entity.DanmakuFontSize
 import com.ke.biliblli.common.entity.DanmakuPosition
 import com.ke.biliblli.common.entity.DanmakuSpeed
 import com.ke.biliblli.common.entity.VideoResolution
+import com.ke.biliblli.common.event.MainTab
 
 @Composable
 fun SettingsRoute(navigate: (Any) -> Unit) {

@@ -8,6 +8,7 @@ import com.ke.biliblli.api.response.DynamicItem
 import com.ke.biliblli.api.response.DynamicUpItem
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.CrashHandler
+import com.ke.biliblli.common.event.MainTab
 import com.ke.biliblli.common.event.MainTabChanged
 import com.ke.biliblli.repository.paging.DynamicPagingSource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -80,7 +81,7 @@ class DynamicViewModel @Inject constructor(
 
     @Subscribe
     fun onTabChanged(event: MainTabChanged) {
-        if (event.index == 1) {
+        if (event.tab == MainTab.Dynamic) {
             viewModelScope.launch {
                 _event.send(Unit)
             }

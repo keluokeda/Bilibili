@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.ke.biliblli.api.response.LaterWatchVideo
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.CrashHandler
+import com.ke.biliblli.common.event.MainTab
 import com.ke.biliblli.common.event.MainTabChanged
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -29,7 +30,7 @@ class LaterWatchViewModel @Inject constructor(
 
     @Subscribe
     fun onTabChanged(event: MainTabChanged) {
-        if (event.index == 3) {
+        if (event.tab == MainTab.LaterWatch) {
             refresh()
         }
     }

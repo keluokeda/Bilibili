@@ -1,7 +1,6 @@
 package com.ke.bilibili.tv.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.ke.bilibili.tv.ui.MainTab
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.BilibiliStorage
 import com.ke.biliblli.common.entity.DanmakuDensity
@@ -9,6 +8,7 @@ import com.ke.biliblli.common.entity.DanmakuFontSize
 import com.ke.biliblli.common.entity.DanmakuPosition
 import com.ke.biliblli.common.entity.DanmakuSpeed
 import com.ke.biliblli.common.entity.VideoResolution
+import com.ke.biliblli.common.event.MainTab
 import com.ke.biliblli.viewmodel.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch

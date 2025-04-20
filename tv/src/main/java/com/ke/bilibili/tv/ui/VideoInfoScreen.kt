@@ -188,7 +188,8 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                                 navigate(
                                     Screen.VideoDetail(
                                         uiState.info.view.bvid,
-                                        uiState.info.view.cid
+                                        uiState.info.view.cid,
+                                        uiState.info.view.aid
                                     )
                                 )
                             }, modifier = Modifier.focusRequester(focusRequester)) {
@@ -201,6 +202,54 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                             }) {
                                 Icon(Icons.AutoMirrored.Filled.Comment, null)
                                 Text("评论")
+                            }
+                        }
+                    }
+
+                    if (uiState.pageList.size > 1) {
+                        item {
+                            Text(
+                                "视频选集",
+                                style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+
+                        item {
+                            LazyRow(
+                                contentPadding = PaddingValues(16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                items(uiState.pageList) {
+                                    Card(
+                                        onClick = {
+//                                            navigate(Screen.VideoInfo(it.bvid))
+                                            navigate(
+                                                Screen.VideoDetail(
+                                                    uiState.info.view.bvid,
+                                                    it.cid,
+                                                    uiState.info.view.aid
+                                                )
+                                            )
+                                        },
+                                        modifier = Modifier
+                                            .width(240.dp)
+                                    ) {
+                                        AsyncImage(
+                                            model = it.firstFrame,
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .aspectRatio(16 / 9f),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                        Text(
+                                            it.part,
+                                            maxLines = 1,
+                                            modifier = Modifier.padding(8.dp)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }

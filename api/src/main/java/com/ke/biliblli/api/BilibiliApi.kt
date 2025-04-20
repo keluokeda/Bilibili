@@ -11,6 +11,7 @@ import com.ke.biliblli.api.response.HistoryResponse
 import com.ke.biliblli.api.response.HomeRecommendListResponse
 import com.ke.biliblli.api.response.LaterWatchResponse
 import com.ke.biliblli.api.response.LoginInfoResponse
+import com.ke.biliblli.api.response.PageResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
 import com.ke.biliblli.api.response.RelationStatusResponse
@@ -24,6 +25,8 @@ import com.ke.biliblli.api.response.VideoInfoResponse
 import com.ke.biliblli.api.response.VideoUrlResponse
 import com.ke.biliblli.api.response.VideoViewResponse
 import retrofit2.http.Body
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Query
@@ -262,6 +265,21 @@ interface BilibiliApi {
      */
     @POST("https://passport.bilibili.com/login/exit/v2")
     suspend fun logout(): BaseResponse<EmptyJson>
+
+    @FormUrlEncoded
+    @POST("x/v2/history/report")
+    suspend fun reportHistory(
+        @Field("aid") aid: Long,
+        @Field("cid") cid: Long,
+        @Field("progress") progress: Long,
+        @Field("platform") platform: String = "android",
+        @Field("csrf") csrf: String
+    )
+
+    @GET("x/player/pagelist")
+    suspend fun pageList(
+        @Query("bvid") bvid: String
+    ): BaseResponse<List<PageResponse>>
 
     companion object {
         const val baseUrl = "https://api.bilibili.com/"

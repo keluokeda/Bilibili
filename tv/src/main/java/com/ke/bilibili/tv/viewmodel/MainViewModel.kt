@@ -3,10 +3,10 @@ package com.ke.bilibili.tv.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.ke.bilibili.tv.ui.MainTab
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.BilibiliStorage
 import com.ke.biliblli.common.Screen
+import com.ke.biliblli.common.event.MainTab
 import com.ke.biliblli.common.event.MainTabChanged
 import com.ke.biliblli.viewmodel.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,7 +27,7 @@ class MainViewModel @Inject constructor(
     override fun handleAction(action: MainAction) {
         when (action) {
             is MainAction.Refresh -> {
-                EventBus.getDefault().post(MainTabChanged(action.current.index))
+                EventBus.getDefault().post(MainTabChanged(action.current))
             }
         }
     }
@@ -35,7 +35,7 @@ class MainViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             try {
-                bilibiliRepository.search("艾尔登法环", 1)
+//                bilibiliRepository.search("艾尔登法环", 1)
             } catch (e: Exception) {
                 e.printStackTrace()
             }

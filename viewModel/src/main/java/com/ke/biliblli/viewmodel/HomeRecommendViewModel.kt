@@ -6,6 +6,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import com.ke.biliblli.api.response.HomeRecommendResponse
 import com.ke.biliblli.common.BilibiliRepository
+import com.ke.biliblli.common.event.MainTab
 import com.ke.biliblli.common.event.MainTabChanged
 import com.ke.biliblli.repository.paging.HomeRecommendVideoPagingSource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,7 +32,7 @@ class HomeRecommendViewModel @Inject constructor(
 
     @Subscribe
     fun onTabChanged(event: MainTabChanged) {
-        if (event.index == 0) {
+        if (event.tab == MainTab.Recommend) {
             viewModelScope.launch {
                 _event.send(Unit)
             }

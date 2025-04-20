@@ -11,6 +11,7 @@ import com.ke.biliblli.api.response.HistoryResponse
 import com.ke.biliblli.api.response.HomeRecommendListResponse
 import com.ke.biliblli.api.response.LaterWatchResponse
 import com.ke.biliblli.api.response.LoginInfoResponse
+import com.ke.biliblli.api.response.PageResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
 import com.ke.biliblli.api.response.RelationStatusResponse
@@ -24,6 +25,7 @@ import com.ke.biliblli.api.response.VideoUrlResponse
 import com.ke.biliblli.api.response.VideoViewResponse
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.BilibiliStorage
+import com.ke.biliblli.common.CrashHandler
 import com.ke.biliblli.common.KePersistentCookieJar
 import com.ke.biliblli.common.entity.WbiParams
 import com.ke.biliblli.common.http.BilibiliProtoApi
@@ -152,6 +154,17 @@ class BilibiliRepositoryImpl @Inject constructor(
         return bilibiliApi.search(map)
     }
 
+    override suspend fun reportHistory(aid: Long, cid: Long, progress: Long) {
+        try {
+            bilibiliApi.reportHistory(
+                aid, cid, progress, csrf = kePersistentCookieJar.getCsrf()
+            )
+        } catch (e: Exception) {
+            CrashHandler.handler(e)
+        }
+
+    }
+
     override suspend fun loginInfo(): BaseResponse<LoginInfoResponse> {
         val loginInfo = bilibiliApi.loginInfo()
         val params = loginInfo.data!!
@@ -171,6 +184,10 @@ class BilibiliRepositoryImpl @Inject constructor(
 //            bilibiliStorage.eid = genAuroraEid(uid)
 //        }
         return loginInfo
+    }
+
+    override suspend fun pageList(bvid: String): BaseResponse<List<PageResponse>> {
+        return bilibiliApi.pageList(bvid)
     }
 
 //    val spmPrefixExp = Regex("<meta name="spm_prefix" content="([^"]+?)">")

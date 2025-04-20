@@ -3,6 +3,7 @@ package com.ke.biliblli.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.ke.biliblli.api.response.PageResponse
 import com.ke.biliblli.api.response.VideoInfoResponse
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.CrashHandler
@@ -31,7 +32,11 @@ class TvVideoInfoViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = TvVideoInfoState.Loading
             try {
-                _uiState.value = TvVideoInfoState.Success(bilibiliRepository.videoInfo(bvid).data!!)
+                val pageList = bilibiliRepository.pageList(bvid)
+                _uiState.value = TvVideoInfoState.Success(
+                    bilibiliRepository.videoInfo(bvid).data!!,
+                    pageList.data ?: emptyList()
+                )
             } catch (e: Exception) {
                 CrashHandler.handler(e)
                 _uiState.value = TvVideoInfoState.Error
@@ -52,5 +57,6 @@ sealed interface TvVideoInfoState {
     data object Error : TvVideoInfoState
 
 
-    data class Success(val info: VideoInfoResponse) : TvVideoInfoState
+    data class Success(val info: VideoInfoResponse, val pageList: List<PageResponse>) :
+        TvVideoInfoState
 }

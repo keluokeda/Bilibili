@@ -230,7 +230,14 @@ class VideoDetailViewModel @Inject constructor(
                     currentPosition = player.currentPosition
                 )?.apply {
                     _uiState.value = this
-//                    Logger.d("current = ${currentPosition},duration = ${player.duration}")
+
+                    if (currentPosition != 0L) {
+                        bilibiliRepository.reportHistory(
+                            params.aid,
+                            params.cid,
+                            currentPosition / 1000
+                        )
+                    }
                 }
 
 

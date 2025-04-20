@@ -11,7 +11,7 @@ sealed interface Screen {
     data class Main(val userId: Long) : Screen
 
     @Serializable
-    data class VideoDetail(val bvid: String, val cid: Long) : Screen
+    data class VideoDetail(val bvid: String, val cid: Long, val aid: Long) : Screen
 
     @Serializable
     data class VideoInfo(val bvid: String) : Screen

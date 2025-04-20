@@ -9,6 +9,7 @@ import com.ke.biliblli.api.response.HistoryResponse
 import com.ke.biliblli.api.response.HomeRecommendListResponse
 import com.ke.biliblli.api.response.LaterWatchResponse
 import com.ke.biliblli.api.response.LoginInfoResponse
+import com.ke.biliblli.api.response.PageResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
 import com.ke.biliblli.api.response.RelationStatusResponse
@@ -85,7 +86,20 @@ interface BilibiliRepository {
     suspend fun loginInfo(): BaseResponse<LoginInfoResponse>
 
 
+    /**
+     * 上报进度
+     */
+    suspend fun reportHistory(
+        aid: Long,
+        cid: Long,
+        progress: Long,
+    )
+
     suspend fun initBuvid()
+
+    suspend fun pageList(
+        bvid: String
+    ): BaseResponse<List<PageResponse>>
 
     suspend fun videoInfo(
         bvid: String

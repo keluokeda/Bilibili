@@ -6,6 +6,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import com.ke.biliblli.api.response.HistoryItem
 import com.ke.biliblli.common.BilibiliRepository
+import com.ke.biliblli.common.event.MainTab
 import com.ke.biliblli.common.event.MainTabChanged
 import com.ke.biliblli.repository.paging.HistoryPagingSource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,7 +36,7 @@ class HistoryViewModel @Inject constructor(
 
     @Subscribe
     fun onTabChanged(event: MainTabChanged) {
-        if (event.index == 3) {
+        if (event.tab == MainTab.History) {
             viewModelScope.launch {
                 _event.send(Unit)
             }
