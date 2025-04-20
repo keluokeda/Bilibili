@@ -24,6 +24,7 @@ class SearchViewModel @Inject constructor(
     )
 ) {
 
+    val showKeyboardWhenStart = savedStateHandle.toRoute<Screen.Search>().defaultKeywords.isEmpty()
 
     val resultList = Pager<Int, SearchResponse>(
         config = PagingConfig(pageSize = 20)

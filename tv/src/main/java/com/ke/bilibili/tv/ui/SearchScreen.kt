@@ -45,7 +45,7 @@ internal fun SearchRoute(navigate: (Any) -> Unit) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val resultList = viewModel.resultList.collectAsLazyPagingItems()
 
-    SearchScreen(uiState, {
+    SearchScreen(viewModel.showKeyboardWhenStart, uiState, {
         viewModel.handleAction(SearchAction.KeywordsChanged(it))
     }, resultList, {
         resultList.refresh()
@@ -54,6 +54,7 @@ internal fun SearchRoute(navigate: (Any) -> Unit) {
 
 @Composable
 private fun SearchScreen(
+    showKeyboardWhenStart: Boolean,
     uiState: SearchState,
     onTextChanged: (String) -> Unit,
     resultList: LazyPagingItems<SearchResponse>,
@@ -70,8 +71,12 @@ private fun SearchScreen(
 
         val focusRequester = remember { FocusRequester() }
 
+
+
         LaunchedEffect(Unit) {
-            focusRequester.requestFocus()
+            if (showKeyboardWhenStart) {
+                focusRequester.requestFocus()
+            }
         }
 
         Row(

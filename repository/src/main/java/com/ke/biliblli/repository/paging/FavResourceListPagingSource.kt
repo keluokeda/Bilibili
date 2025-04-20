@@ -33,7 +33,7 @@ class FavResourceListPagingSource(
             val data = bilibiliRepository.favDetail(id, params.key ?: 1, 20).data!!
 
             LoadResult.Page(
-                data = data.medias,
+                data = data.medias ?: emptyList(),
                 prevKey = null,
                 nextKey = if (data.more) (index + 1) else null
             )

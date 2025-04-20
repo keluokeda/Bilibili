@@ -21,6 +21,9 @@ data class VideoUrlResponse(
     val dash: VideoDash,
     @JsonNames("support_formats")
     val supportFormats: List<VideoSupportFormat>,
+
+    @JsonNames("last_play_time")
+    val lastPlayTime: Long = 0
 )
 
 

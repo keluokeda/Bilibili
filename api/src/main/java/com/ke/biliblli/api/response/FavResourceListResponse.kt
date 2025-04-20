@@ -9,7 +9,7 @@ import kotlinx.serialization.json.JsonNames
 @Serializable
 data class FavResourceListResponse(
 
-    val medias: List<FavResourceMediaResponse>,
+    val medias: List<FavResourceMediaResponse>? = null,
     @JsonNames("has_more")
     val more: Boolean
 )

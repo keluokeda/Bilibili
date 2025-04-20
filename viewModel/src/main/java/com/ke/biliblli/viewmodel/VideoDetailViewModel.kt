@@ -304,7 +304,11 @@ class VideoDetailViewModel @Inject constructor(
                         danmakuEnable = bilibiliStorage.danmakuEnable,
                         danmakuPosition = bilibiliStorage.danmakuPosition
                     ).apply {
-                        play(currentVideoResolution.url, audioList.first().url)
+                        play(
+                            currentVideoResolution.url,
+                            audioList.first().url,
+                            startPositionMs = response.lastPlayTime
+                        )
                     }
 
                 }
