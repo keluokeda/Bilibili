@@ -12,9 +12,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -93,10 +97,20 @@ private fun LoginScreen(
             }
             Spacer(modifier = Modifier.width(32.dp))
 
+            val focusRequester = remember {
+                FocusRequester()
+            }
+
+            LaunchedEffect(Unit) {
+                focusRequester.requestFocus()
+            }
+
+
             Column(modifier = Modifier.height(qrSize), verticalArrangement = Arrangement.Center) {
                 Button(
                     onClick = login,
-                    enabled = !state.loading && state.url?.isNotEmpty() == true
+                    enabled = !state.loading && state.url?.isNotEmpty() == true,
+                    modifier = Modifier.focusRequester(focusRequester)
                 ) {
                     Text(
                         "我已扫码", textAlign = TextAlign.Center,
