@@ -245,7 +245,17 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
 
                         item {
                             ListItem(
-                                selected = false, onClick = {}, headlineContent = {
+                                selected = false, onClick = {
+                                    val owner = uiState.info.view.owner
+                                    navigate(
+                                        Screen.UserDetail(
+                                            owner.mid,
+                                            owner.name,
+                                            owner.face,
+                                            ""
+                                        )
+                                    )
+                                }, headlineContent = {
                                     Text(uiState.info.view.owner.name)
                                 }, leadingContent = {
                                     AsyncImage(

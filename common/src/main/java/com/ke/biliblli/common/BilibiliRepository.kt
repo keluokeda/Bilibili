@@ -13,7 +13,9 @@ import com.ke.biliblli.api.response.PageResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
 import com.ke.biliblli.api.response.RelationStatusResponse
+import com.ke.biliblli.api.response.SearchHotWordListResponse
 import com.ke.biliblli.api.response.SearchListResponse
+import com.ke.biliblli.api.response.SearchSuggestResponse
 import com.ke.biliblli.api.response.SeasonsListDataResponse
 import com.ke.biliblli.api.response.UserArchivesResponse
 import com.ke.biliblli.api.response.UserFavListResponse
@@ -24,6 +26,7 @@ import com.ke.biliblli.api.response.VideoUrlResponse
 import com.ke.biliblli.api.response.VideoViewResponse
 import com.ke.biliblli.common.entity.BilibiliDanmaku
 import com.ke.biliblli.common.http.BilibiliProtoApi
+import kotlinx.coroutines.flow.Flow
 
 interface BilibiliRepository {
 
@@ -97,6 +100,19 @@ interface BilibiliRepository {
 
     suspend fun initBuvid()
 
+    /**
+     * 搜索建议
+     */
+    suspend fun searchSuggest(
+        term: String
+    ): SearchSuggestResponse
+
+
+    /**
+     * 热搜
+     */
+    suspend fun searchKeyWords(): SearchHotWordListResponse
+
     suspend fun pageList(
         bvid: String
     ): BaseResponse<List<PageResponse>>
@@ -141,6 +157,9 @@ interface BilibiliRepository {
     suspend fun logout()
 
 
+    /**
+     * 搜索
+     */
     suspend fun search(keywords: String, index: Int): BaseResponse<SearchListResponse>
 
     suspend fun userVideos(
@@ -153,4 +172,10 @@ interface BilibiliRepository {
         index: Int = 1,
         size: Int = 20
     ): BaseResponse<SeasonsListDataResponse>
+
+
+    /**
+     * 历史搜索记录
+     */
+    fun searchHistoryList(): Flow<List<String>>
 }

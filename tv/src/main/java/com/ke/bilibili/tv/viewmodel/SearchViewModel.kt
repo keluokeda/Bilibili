@@ -6,12 +6,17 @@ import androidx.navigation.toRoute
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
+import com.ke.biliblli.api.response.SearchHotWord
 import com.ke.biliblli.api.response.SearchResponse
+import com.ke.biliblli.api.response.SearchSuggestTag
 import com.ke.biliblli.common.BilibiliRepository
+import com.ke.biliblli.common.CrashHandler
 import com.ke.biliblli.common.Screen
 import com.ke.biliblli.repository.paging.SearchPagingSource
 import com.ke.biliblli.viewmodel.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,6 +29,28 @@ class SearchViewModel @Inject constructor(
     )
 ) {
 
+    init {
+        viewModelScope.launch {
+            try {
+
+                _uiState.update {
+                    it.copy(hotWords = bilibiliRepository.searchKeyWords().list)
+                }
+
+            } catch (e: Exception) {
+                CrashHandler.handler(e)
+            }
+        }
+
+        viewModelScope.launch {
+            bilibiliRepository.searchHistoryList().collect { list ->
+                _uiState.update {
+                    it.copy(historyList = list)
+                }
+            }
+        }
+    }
+
     val showKeyboardWhenStart = savedStateHandle.toRoute<Screen.Search>().defaultKeywords.isEmpty()
 
     val resultList = Pager<Int, SearchResponse>(
@@ -35,7 +62,11 @@ class SearchViewModel @Inject constructor(
     override fun handleAction(action: SearchAction) {
         when (action) {
             is SearchAction.KeywordsChanged -> {
-                _uiState.value = SearchState(action.value)
+                _uiState.update {
+                    it.copy(keywords = action.value)
+                }
+
+                updateSuggest()
             }
 
             SearchAction.Search -> {
@@ -44,11 +75,41 @@ class SearchViewModel @Inject constructor(
         }
     }
 
+    private fun updateSuggest() {
+        val keywords = uiState.value.keywords
+
+        if (keywords.isEmpty()) {
+            _uiState.update {
+                it.copy(
+                    suggestWords = emptyList()
+                )
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val list = bilibiliRepository.searchSuggest(keywords).result.tag
+
+                _uiState.update {
+                    it.copy(
+                        suggestWords = list
+                    )
+                }
+            } catch (e: Exception) {
+                CrashHandler.handler(e)
+            }
+        }
+    }
+
 
 }
 
 data class SearchState(
-    val keywords: String
+    val keywords: String,
+    val historyList: List<String> = emptyList(),
+    val hotWords: List<SearchHotWord> = emptyList(),
+    val suggestWords: List<SearchSuggestTag> = emptyList()
 )
 
 sealed interface SearchAction {

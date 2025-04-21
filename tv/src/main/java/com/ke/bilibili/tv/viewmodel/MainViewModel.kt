@@ -3,6 +3,7 @@ package com.ke.bilibili.tv.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.ke.biliblli.api.BilibiliApi
 import com.ke.biliblli.common.BilibiliRepository
 import com.ke.biliblli.common.BilibiliStorage
 import com.ke.biliblli.common.Screen
@@ -17,7 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-//    private val bilibiliApi: BilibiliApi,
+    private val bilibiliApi: BilibiliApi,
     private val bilibiliRepository: BilibiliRepository,
     private val bilibiliStorage: BilibiliStorage
 ) : BaseViewModel<Unit, MainAction, MainEvent>(Unit) {
@@ -36,6 +37,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             try {
 //                bilibiliRepository.search("艾尔登法环", 1)
+//                bilibiliApi.searchSuggest("ardfh")
             } catch (e: Exception) {
                 e.printStackTrace()
             }

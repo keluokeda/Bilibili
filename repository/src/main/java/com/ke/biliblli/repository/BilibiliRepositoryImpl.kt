@@ -15,7 +15,9 @@ import com.ke.biliblli.api.response.PageResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
 import com.ke.biliblli.api.response.RelationStatusResponse
+import com.ke.biliblli.api.response.SearchHotWordListResponse
 import com.ke.biliblli.api.response.SearchListResponse
+import com.ke.biliblli.api.response.SearchSuggestResponse
 import com.ke.biliblli.api.response.SeasonsListDataResponse
 import com.ke.biliblli.api.response.UserArchivesResponse
 import com.ke.biliblli.api.response.UserFavListResponse
@@ -29,6 +31,10 @@ import com.ke.biliblli.common.CrashHandler
 import com.ke.biliblli.common.KePersistentCookieJar
 import com.ke.biliblli.common.entity.WbiParams
 import com.ke.biliblli.common.http.BilibiliProtoApi
+import com.ke.biliblli.db.dao.SearchHistoryDao
+import com.ke.biliblli.db.entity.SearchHistoryEntity
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
@@ -43,7 +49,8 @@ class BilibiliRepositoryImpl @Inject constructor(
     override val bilibiliProtoApi: BilibiliProtoApi,
     private val bilibiliHtmlApi: BilibiliHtmlApi,
     private val bilibiliStorage: BilibiliStorage,
-    private val kePersistentCookieJar: KePersistentCookieJar
+    private val kePersistentCookieJar: KePersistentCookieJar,
+    private val searchHistoryDao: SearchHistoryDao
 ) :
     BilibiliRepository {
 
@@ -95,6 +102,13 @@ class BilibiliRepositoryImpl @Inject constructor(
         return bilibiliApi.seasonsSeriesList(userId, index, size)
     }
 
+
+    override fun searchHistoryList(): Flow<List<String>> {
+        return searchHistoryDao.all().map { list ->
+            list.map { it.keywords }
+        }
+    }
+
     override suspend fun dynamicList(
         offset: String?,
         type: String,
@@ -128,6 +142,10 @@ class BilibiliRepositoryImpl @Inject constructor(
     }
 
     override suspend fun search(keywords: String, index: Int): BaseResponse<SearchListResponse> {
+        if (keywords.isNotEmpty()) {
+            searchHistoryDao.insert(SearchHistoryEntity(keywords))
+        }
+
         var current = bilibiliStorage.wbiParams
 
         val wbiParams = if (current?.canUse() != true) {
@@ -153,6 +171,7 @@ class BilibiliRepositoryImpl @Inject constructor(
 
         return bilibiliApi.search(map)
     }
+
 
     override suspend fun reportHistory(aid: Long, cid: Long, progress: Long) {
         try {
@@ -194,6 +213,15 @@ class BilibiliRepositoryImpl @Inject constructor(
 
     val pattern =
         """<meta\s+name="spm_prefix"\s+content="([^"]+)"\s*/?>""".toRegex(RegexOption.IGNORE_CASE)
+
+
+    override suspend fun searchKeyWords(): SearchHotWordListResponse {
+        return bilibiliApi.searchKeyWords()
+    }
+
+    override suspend fun searchSuggest(term: String): SearchSuggestResponse {
+        return bilibiliApi.searchSuggest(term)
+    }
 
     override suspend fun initBuvid() {
         bilibiliHtmlApi.mainPage()

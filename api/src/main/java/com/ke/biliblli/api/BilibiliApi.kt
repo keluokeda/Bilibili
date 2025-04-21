@@ -15,7 +15,9 @@ import com.ke.biliblli.api.response.PageResponse
 import com.ke.biliblli.api.response.PollQrcodeResponse
 import com.ke.biliblli.api.response.QrCodeResponse
 import com.ke.biliblli.api.response.RelationStatusResponse
+import com.ke.biliblli.api.response.SearchHotWordListResponse
 import com.ke.biliblli.api.response.SearchListResponse
+import com.ke.biliblli.api.response.SearchSuggestResponse
 import com.ke.biliblli.api.response.SeasonsListDataResponse
 import com.ke.biliblli.api.response.UserArchivesResponse
 import com.ke.biliblli.api.response.UserFavListResponse
@@ -280,6 +282,21 @@ interface BilibiliApi {
     suspend fun pageList(
         @Query("bvid") bvid: String
     ): BaseResponse<List<PageResponse>>
+
+    /**
+     * 搜索建议
+     */
+    @GET("https://s.search.bilibili.com/main/suggest")
+    suspend fun searchSuggest(
+        @Query("term") term: String
+    ): SearchSuggestResponse
+
+
+    /**
+     * 热搜
+     */
+    @GET("https://s.search.bilibili.com/main/hotword")
+    suspend fun searchKeyWords(): SearchHotWordListResponse
 
     companion object {
         const val baseUrl = "https://api.bilibili.com/"
