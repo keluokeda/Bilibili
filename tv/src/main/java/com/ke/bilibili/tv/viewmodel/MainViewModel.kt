@@ -11,6 +11,9 @@ import com.ke.biliblli.common.event.MainTab
 import com.ke.biliblli.common.event.MainTabChanged
 import com.ke.biliblli.viewmodel.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import javax.inject.Inject
@@ -30,6 +33,19 @@ class MainViewModel @Inject constructor(
             is MainAction.Refresh -> {
                 EventBus.getDefault().post(MainTabChanged(action.current))
             }
+        }
+    }
+
+
+    private val _canBack = MutableStateFlow(false)
+
+    val canBack = _canBack.asStateFlow()
+
+    fun onBackPress() {
+        viewModelScope.launch {
+            _canBack.value = true
+            delay(2000)
+            _canBack.value = false
         }
     }
 

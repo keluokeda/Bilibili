@@ -11,6 +11,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.OutlinedButton
 import androidx.tv.material3.Text
 import com.ke.bilibili.tv.observeWithLifecycle
+import com.ke.bilibili.tv.ui.component.Loading
 import com.ke.biliblli.viewmodel.SplashAction
 import com.ke.biliblli.viewmodel.SplashEvent
 import com.ke.biliblli.viewmodel.SplashState
@@ -50,7 +51,7 @@ internal fun SplashRoute(
             }
 
             SplashState.Loading -> {
-                Text("加载中")
+                Loading()
             }
         }
     }

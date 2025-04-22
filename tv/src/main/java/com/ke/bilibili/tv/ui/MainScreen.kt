@@ -1,5 +1,6 @@
 package com.ke.bilibili.tv.ui
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,8 +23,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Tab
 import androidx.tv.material3.TabRow
 import androidx.tv.material3.Text
@@ -39,6 +42,8 @@ fun MainRoute(navigate: (Any) -> Unit) {
 
     val mainViewModel = hiltViewModel<MainViewModel>()
 
+    val canBack by mainViewModel.canBack.collectAsStateWithLifecycle()
+
     val focusRequester = remember { FocusRequester() }
 
     var hasFocus by remember {
@@ -49,8 +54,15 @@ fun MainRoute(navigate: (Any) -> Unit) {
 
     var selectedTab by rememberSaveable { mutableStateOf(defaultTab) }
 
-    BackHandler(enabled = !hasFocus) {
-        focusRequester.requestFocus()
+    val context = LocalContext.current.applicationContext
+    BackHandler(enabled = !hasFocus || !canBack) {
+        if (hasFocus) {
+            mainViewModel.onBackPress()
+            Toast.makeText(context, "再次返回退出", Toast.LENGTH_SHORT).show()
+        } else {
+            focusRequester.requestFocus()
+        }
+
     }
 
 

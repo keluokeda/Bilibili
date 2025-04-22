@@ -298,7 +298,7 @@ private fun DynamicContent(
     }
 }
 
-private val textMaxLine = 4
+private const val textMaxLine = 4
 
 @Composable
 private fun DynamicVideoCard(archive: DynamicItemModuleDynamicMajorArchive) {

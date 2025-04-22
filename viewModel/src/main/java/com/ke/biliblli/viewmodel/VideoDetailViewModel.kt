@@ -26,7 +26,6 @@ import com.ke.biliblli.common.entity.DanmakuFontSize
 import com.ke.biliblli.common.entity.DanmakuPosition
 import com.ke.biliblli.common.entity.DanmakuSpeed
 import com.ke.biliblli.common.entity.VideoResolution
-import com.orhanobut.logger.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
@@ -51,6 +50,17 @@ val audioResolutionPairList = listOf<Triple<Int, Int, String>>(
     Triple(4, 30251, "Hi-Res无损")
 )
 
+enum class VideoSpeed(val speed: Float, val displayName: String) {
+    X05(0.5f, "0.5x"),
+    X075(0.75f, "0.75x"),
+    X1(1f, "1.0x"),
+    X125(1.25f, "1.25x"),
+    X15(1.5f, "1.5x"),
+    X175(1.75f, "1.75x"),
+    X2(2.0f, "2.0x")
+
+}
+
 @UnstableApi
 @HiltViewModel
 class VideoDetailViewModel @Inject constructor(
@@ -65,16 +75,16 @@ class VideoDetailViewModel @Inject constructor(
     private val params = savedStateHandle.toRoute<Screen.VideoDetail>()
 
 
-    private val _config = MutableStateFlow(
-        DanmakuTextConfig(
-            bilibiliStorage.danmakuFontSize,
-            bilibiliStorage.danmakuColorful,
-            bilibiliStorage.danmakuSpeed
-        )
-    )
-
-
-    val config = _config.asStateFlow()
+//    private val _config = MutableStateFlow(
+//        DanmakuTextConfig(
+//            bilibiliStorage.danmakuFontSize,
+//            bilibiliStorage.danmakuColorful,
+//            bilibiliStorage.danmakuSpeed
+//        )
+//    )
+//
+//
+//    val config = _config.asStateFlow()
 
     private val dataSourceFactory: DataSource.Factory =
         DefaultHttpDataSource.Factory()
@@ -138,12 +148,13 @@ class VideoDetailViewModel @Inject constructor(
     val danmakuItemsForDisplay = _danmakuItemsForDisplay.asStateFlow()
 
     fun onDanmakuSizeMeasured(danmakuItem: DanmakuItem, parentWidth: Int, selfWidth: Int) {
+        val startTime = player.currentPosition
         val newValue = danmakuItem.copy(
             parentWidth = parentWidth,
             selfWidth = selfWidth,
             offsetX = parentWidth,
-            startTime = System.currentTimeMillis(),
-            lastUpdateTime = System.currentTimeMillis()
+            startTime = startTime,
+            lastUpdateTime = startTime
         )
 
         _danmakuItemsForDisplay.update {
@@ -169,17 +180,17 @@ class VideoDetailViewModel @Inject constructor(
         _danmakuItemsForDisplay.update { list ->
 
             list.filter {
-                System.currentTimeMillis()- it.startTime  < danmakuSpeed.duration
+                currentPosition - it.startTime < danmakuSpeed.duration
             }
                 .map {
                     if (it.parentWidth != 0) {
                         val speed =
                             (it.parentWidth + it.selfWidth) / danmakuSpeed.duration.toFloat()
-                        val duration = System.currentTimeMillis() - it.startTime
-                        val animationDuration = System.currentTimeMillis() - it.lastUpdateTime
+                        val duration = currentPosition - it.startTime
+                        val animationDuration = currentPosition - it.lastUpdateTime
                         val interval = (duration) * speed
-                        Logger.d("speed = $speed, duration = $duration ,interval = $interval,offset = ${it.parentWidth - interval}")
-                        it.lastUpdateTime = System.currentTimeMillis()
+//                        Logger.d("speed = $speed, duration = $duration ,interval = $interval,offset = ${it.parentWidth - interval}")
+                        it.lastUpdateTime = currentPosition
                         it.duration = animationDuration
 //                    val percent =
 //                        (System.currentTimeMillis() - it.startTime) / danmakuSpeed.duration.toFloat()
@@ -304,7 +315,8 @@ class VideoDetailViewModel @Inject constructor(
             }
         }
     }
-    private fun reportHistory(position:Long){
+
+    private fun reportHistory(position: Long) {
         viewModelScope.launch {
             if (position != 0L) {
                 bilibiliRepository.reportHistory(
@@ -520,6 +532,18 @@ class VideoDetailViewModel @Inject constructor(
                 val target = player.currentPosition - 10000
                 player.seekTo(if (target > 0) target else 0)
             }
+
+            VideoDetailAction.Forward -> {
+                val target = player.currentPosition + 10000
+                player.seekTo(if (target >= player.duration) player.duration else target)
+            }
+
+            is VideoDetailAction.UpdateSpeed -> {
+                player.setPlaybackSpeed(action.videoSpeed.speed)
+                _uiState.update {
+                    (it as? VideoDetailState.Content)?.copy(videoSpeed = action.videoSpeed) ?: it
+                }
+            }
         }
     }
 
@@ -610,7 +634,8 @@ sealed interface VideoDetailState {
         val isPlaying: Boolean = true,
         val currentPosition: Long = 0,
         val playbackState: Int = Player.STATE_BUFFERING,
-        val playerViewShowMiniProgressBar: Boolean = false
+        val playerViewShowMiniProgressBar: Boolean = false,
+        val videoSpeed: VideoSpeed = VideoSpeed.X1
     ) :
         VideoDetailState
 }
@@ -645,6 +670,11 @@ sealed interface VideoDetailAction {
     data object TogglePlaying : VideoDetailAction
 
     data object Backward : VideoDetailAction
+
+
+    data object Forward : VideoDetailAction
+
+    data class UpdateSpeed(val videoSpeed: VideoSpeed) : VideoDetailAction
 }
 
 sealed interface VideoDetailEvent {
@@ -654,7 +684,7 @@ sealed interface VideoDetailEvent {
         val current: VideoResolution
     ) : VideoDetailEvent
 
-    data class ShootDanmaku(val item: BilibiliDanmaku) : VideoDetailEvent
+//    data class ShootDanmaku(val item: BilibiliDanmaku) : VideoDetailEvent
 
     data object BackToInfo : VideoDetailEvent
 }

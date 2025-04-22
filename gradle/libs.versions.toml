@@ -1,5 +1,5 @@
 [versions]
-agp = "8.9.1"
+agp = "8.9.2"
 converterKotlinxSerialization = "2.11.0"
 hiltAndroid = "2.56.1"
 hiltAndroidCompiler = "2.56.1"

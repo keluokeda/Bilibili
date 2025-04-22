@@ -20,9 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -43,11 +41,13 @@ import androidx.media3.ui.PlayerView
 import androidx.tv.material3.Button
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.FilterChip
+import androidx.tv.material3.ListItem
 import androidx.tv.material3.MaterialTheme
+import androidx.tv.material3.Switch
 import androidx.tv.material3.Text
 import com.ke.bilibili.tv.observeWithLifecycle
-import com.ke.bilibili.tv.ui.component.DanmakuItem
 import com.ke.bilibili.tv.ui.component.DanmakuView
+import com.ke.bilibili.tv.ui.component.Loading
 import com.ke.bilibili.tv.ui.component.ProgressBar
 import com.ke.biliblli.common.duration
 import com.ke.biliblli.viewmodel.AudioResolution
@@ -56,6 +56,7 @@ import com.ke.biliblli.viewmodel.VideoDetailAction
 import com.ke.biliblli.viewmodel.VideoDetailEvent
 import com.ke.biliblli.viewmodel.VideoDetailState
 import com.ke.biliblli.viewmodel.VideoDetailViewModel
+import com.ke.biliblli.viewmodel.VideoSpeed
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -67,24 +68,24 @@ internal fun VideoDetailRoute(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val config by viewModel.config.collectAsStateWithLifecycle()
+//    val config by viewModel.config.collectAsStateWithLifecycle()
 
-    var sender by remember {
-        mutableStateOf<((DanmakuItem) -> Unit)?>(null)
-    }
+//    var sender by remember {
+//        mutableStateOf<((DanmakuItem) -> Unit)?>(null)
+//    }
 
     viewModel.event.observeWithLifecycle {
         when (it) {
-            is VideoDetailEvent.ShootDanmaku -> {
-                val item = DanmakuItem(
-                    id = it.item.id.toString(),
-                    color = it.item.rgb(config.colorful),
-                    fontSize = (it.item.fontSize * config.fontSize.ratio).toInt(),
-                    content = it.item.content,
-                    duration = config.speed.duration
-                )
-                sender?.invoke(item)
-            }
+//            is VideoDetailEvent.ShootDanmaku -> {
+//                val item = DanmakuItem(
+//                    id = it.item.id.toString(),
+//                    color = it.item.rgb(config.colorful),
+//                    fontSize = (it.item.fontSize * config.fontSize.ratio).toInt(),
+//                    content = it.item.content,
+//                    duration = config.speed.duration
+//                )
+//                sender?.invoke(item)
+//            }
 
             is VideoDetailEvent.ShowVideoResolutionListDialog -> {
 
@@ -112,18 +113,14 @@ internal fun VideoDetailRoute(
             viewModel.handleAction(VideoDetailAction.UpdateAudioResolution(it))
         },
         {
-            sender = it
-        }, {
-            if (it) {
-                viewModel.handleAction(VideoDetailAction.StartSpeedPlay)
-            } else {
-                viewModel.handleAction(VideoDetailAction.StopSpeedPlay)
-            }
+            viewModel.handleAction(VideoDetailAction.Forward)
         }, {
 
             viewModel.handleAction(VideoDetailAction.TogglePlaying)
         }, {
             viewModel.handleAction(VideoDetailAction.Backward)
+        }, {
+            viewModel.handleAction(VideoDetailAction.UpdateSpeed(it))
         })
 
 
@@ -138,10 +135,10 @@ private fun VideoDetailScreen(
     setControllerVisible: (Boolean) -> Unit,
     updateVideoResolution: (Resolution) -> Unit,
     updateAudioResolution: (AudioResolution) -> Unit,
-    receiver: ((DanmakuItem) -> Unit) -> Unit,
-    setSpeedPlay: (Boolean) -> Unit,
+    forward: () -> Unit,
     togglePlay: () -> Unit,
-    backward: () -> Unit
+    backward: () -> Unit,
+    updateSpeed: (VideoSpeed) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         when (uiState) {
@@ -165,11 +162,8 @@ private fun VideoDetailScreen(
                                 return@onKeyEvent if ((it.key == Key.Menu || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyUp) {
                                     setControllerVisible(true)
                                     true
-                                } else if (it.key == Key.DirectionRight && it.type == KeyEventType.KeyDown) {
-                                    setSpeedPlay(true)
-                                    true
                                 } else if (it.key == Key.DirectionRight && it.type == KeyEventType.KeyUp) {
-                                    setSpeedPlay(false)
+                                    forward()
                                     true
                                 } else if (it.key == Key.DirectionCenter && (it.type == KeyEventType.KeyUp)) {
                                     togglePlay()
@@ -210,16 +204,6 @@ private fun VideoDetailScreen(
                                     .align(Alignment.TopCenter)
                         ) {
 
-//                            DanmakuView(
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .height(
-//                                        maxHeight / uiState.danmakuPosition.code
-//                                    )
-//                            ) {
-//                                receiver(it)
-//                            }
-
                             DanmakuView()
                         }
 
@@ -231,7 +215,7 @@ private fun VideoDetailScreen(
 
 
                     if (uiState.playbackState == Player.STATE_BUFFERING) {
-                        Text("加载中")
+                        Loading()
                     }
 
                     if (uiState.showController) {
@@ -299,6 +283,39 @@ private fun VideoDetailScreen(
 
                                 }
                             }
+
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                modifier = Modifier
+                                    .padding(16.dp)
+                            ) {
+                                Text(
+                                    "倍速",
+                                    style = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
+                                    modifier = Modifier.align(alignment = Alignment.CenterVertically)
+                                )
+
+                                VideoSpeed.entries.forEach { speed ->
+                                    FilterChip(
+                                        selected = speed == uiState.videoSpeed,
+                                        onClick = {
+                                            updateSpeed(speed)
+                                        }, enabled = speed != uiState.videoSpeed
+                                    ) {
+                                        Text(speed.displayName)
+                                    }
+
+                                }
+                            }
+
+                            ListItem(
+                                selected = false,
+                                onClick = {},
+                                headlineContent = { Text("弹幕开关") }, leadingContent = {
+                                    Switch(false, onCheckedChange = {})
+                                })
+
+
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
