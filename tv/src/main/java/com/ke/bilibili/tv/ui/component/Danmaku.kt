@@ -5,10 +5,12 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntOffsetAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,8 +20,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -28,7 +33,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
+import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import com.ke.bilibili.tv.ui.theme.BilibiliTheme
 import com.ke.biliblli.viewmodel.VideoDetailViewModel
 import kotlinx.serialization.Serializable
 import kotlin.random.Random
@@ -197,7 +204,9 @@ fun DanmakuView() {
                     Text(
                         it.content, style = TextStyle(
                             color = it.fontColor.toColor(),
-                            fontSize = it.fontSize.sp
+                            fontSize = it.fontSize.sp,
+//                            drawStyle = Stroke(6f)
+                            fontWeight = FontWeight.Bold
                         )
                     )
                 }
@@ -236,6 +245,22 @@ fun DanmakuView() {
                 }
             }
         }
+    }
+}
+
+@Composable
+@Preview
+private fun StrokeText() {
+    BilibiliTheme {
+
+
+        Text(
+            "这是一段文字", style = MaterialTheme.typography.headlineSmall.copy(
+                drawStyle = Stroke(width = 1f), color = Color.White
+            ), modifier = Modifier
+                .background(color = Color.Black)
+                .padding(16.dp)
+        )
     }
 }
 

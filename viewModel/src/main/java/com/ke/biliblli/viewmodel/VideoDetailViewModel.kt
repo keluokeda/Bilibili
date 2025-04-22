@@ -22,6 +22,7 @@ import com.ke.biliblli.common.BilibiliStorage
 import com.ke.biliblli.common.CrashHandler
 import com.ke.biliblli.common.Screen
 import com.ke.biliblli.common.entity.BilibiliDanmaku
+import com.ke.biliblli.common.entity.DanmakuDensity
 import com.ke.biliblli.common.entity.DanmakuFontSize
 import com.ke.biliblli.common.entity.DanmakuPosition
 import com.ke.biliblli.common.entity.DanmakuSpeed
@@ -168,8 +169,13 @@ class VideoDetailViewModel @Inject constructor(
     private val fontSizeRatio = bilibiliStorage.danmakuFontSize
     private val colorful = bilibiliStorage.danmakuColorful
     private val danmakuSpeed = bilibiliStorage.danmakuSpeed
-
+    private val danmakuDensity = bilibiliStorage.danmakuDensity
     private fun onVideoPositionChanged(currentPosition: Long) {
+
+        if (player.duration <= 0) {
+            return
+        }
+
         val targetList = _bilibiliDanmakuList.filter {
             it.progress - currentPosition in 0..1000
         }
@@ -177,10 +183,12 @@ class VideoDetailViewModel @Inject constructor(
 
         //把 targetList 塞进去
 
+//        Logger.d("duration = ${player.duration} , current = $currentPosition")
+
         _danmakuItemsForDisplay.update { list ->
 
             list.filter {
-                currentPosition - it.startTime < danmakuSpeed.duration
+                currentPosition - it.startTime < danmakuSpeed.duration && currentPosition - it.startTime > 0
             }
                 .map {
                     if (it.parentWidth != 0) {
@@ -199,14 +207,19 @@ class VideoDetailViewModel @Inject constructor(
                     } else {
                         it
                     }
-                } + targetList.map {
-                DanmakuItem(
-                    id = it.id,
-                    content = it.content,
-                    fontSize = it.fontSize * fontSizeRatio.ratio,
-                    fontColor = it.rgb(colorful)
-                )
-            }
+                } + targetList
+                .filterIndexed { index, item ->
+                    danmakuDensity == DanmakuDensity.Normal ||
+                            index % danmakuDensity.code == 0
+                }
+                .map {
+                    DanmakuItem(
+                        id = it.id,
+                        content = it.content,
+                        fontSize = it.fontSize * fontSizeRatio.ratio,
+                        fontColor = it.rgb(colorful)
+                    )
+                }
         }
     }
 
