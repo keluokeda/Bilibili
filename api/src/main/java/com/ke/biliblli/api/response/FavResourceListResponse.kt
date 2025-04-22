@@ -20,5 +20,20 @@ data class FavResourceMediaResponse(
     val title: String,
     val type: Int,
     val cover: String,
-    val bvid: String
+    val bvid: String,
+    val upper: FavUpper,
+    @JsonNames("cnt_info")
+    val info: FavResourceMediaInfo,
+    val duration: Long
+)
+
+@Serializable
+data class FavResourceMediaInfo(
+    val play: Long,
+    val danmaku: Long
+)
+
+@Serializable
+data class FavUpper(
+    val name: String
 )

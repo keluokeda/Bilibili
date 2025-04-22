@@ -47,6 +47,8 @@ import androidx.tv.material3.ListItem
 import androidx.tv.material3.Text
 import coil.compose.AsyncImage
 import com.ke.bilibili.tv.observeWithLifecycle
+import com.ke.bilibili.tv.ui.component.VideoItem
+import com.ke.bilibili.tv.ui.component.VideoItemView
 import com.ke.bilibili.tv.ui.theme.BilibiliTheme
 import com.ke.biliblli.api.response.DynamicItem
 import com.ke.biliblli.api.response.DynamicItemModule
@@ -154,7 +156,7 @@ private fun DynamicScreen(
 
         LazyVerticalGrid(
 //            columns = StaggeredGridCells.Fixed(3),
-            columns = GridCells.Fixed(3),
+            columns = GridCells.Fixed(4),
             contentPadding = PaddingValues(24.dp),
 //            verticalItemSpacing = 16.dp,
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -167,9 +169,23 @@ private fun DynamicScreen(
             items(list.itemCount) {
                 val item = list[it]!!
 
+                val archive = item.module.dynamic.major!!.archive!!
+//                DynamicCard(item, navigate)
 
-                DynamicCard(item, navigate)
+                VideoItemView(
+                    VideoItem(
+                        title = archive.title,
+                        image = archive.cover,
 
+                        view = archive.stat.play,
+                        danmaku = archive.stat.danmaku,
+                        duration = archive.duration,
+                        lastProgress = "",
+                        author = item.module.author.name
+                    )
+                ) {
+                    navigate(Screen.VideoInfo(archive.bvid))
+                }
 
             }
         }

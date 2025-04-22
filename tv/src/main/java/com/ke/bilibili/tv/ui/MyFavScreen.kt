@@ -1,13 +1,10 @@
 package com.ke.bilibili.tv.ui
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,23 +14,24 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.tv.material3.Card
 import androidx.tv.material3.ListItem
 import androidx.tv.material3.Text
-import coil.compose.AsyncImage
 import com.ke.bilibili.tv.observeWithLifecycle
+import com.ke.bilibili.tv.ui.component.VideoItem
+import com.ke.bilibili.tv.ui.component.VideoItemView
 import com.ke.bilibili.tv.viewmodel.MyFavAction
 import com.ke.bilibili.tv.viewmodel.MyFavState
 import com.ke.bilibili.tv.viewmodel.MyFavViewModel
 import com.ke.biliblli.api.response.FavResourceMediaResponse
 import com.ke.biliblli.api.response.UserFavResponse
 import com.ke.biliblli.common.Screen
+import com.ke.biliblli.common.duration
+import com.ke.biliblli.common.format
 
 @Composable
 fun MyFavRoute(navigate: (Any) -> Unit) {
@@ -92,23 +90,36 @@ private fun MyFavScreen(
             ) {
                 items(mediaList.itemCount) {
                     val item = mediaList[it]!!
-                    Card(onClick = {
+                    VideoItemView(
+                        VideoItem(
+                            title = item.title,
+                            image = item.cover,
+                            view = item.info.play.format(),
+                            danmaku = item.info.danmaku.format(),
+                            duration = item.duration.duration(),
+                            lastProgress = "",
+                            author = item.upper.name
+                        )
+                    ) {
                         navigate(Screen.VideoInfo(item.bvid))
-                    }) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(16 / 9f)
-                        ) {
-                            AsyncImage(
-                                model = item.cover,
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-
-                        Text(item.title, maxLines = 2, modifier = Modifier.padding(8.dp))
                     }
+//                    Card(onClick = {
+//                        navigate(Screen.VideoInfo(item.bvid))
+//                    }) {
+//                        Box(
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .aspectRatio(16 / 9f)
+//                        ) {
+//                            AsyncImage(
+//                                model = item.cover,
+//                                contentDescription = null,
+//                                contentScale = ContentScale.Crop
+//                            )
+//                        }
+//
+//                        Text(item.title, maxLines = 2, modifier = Modifier.padding(8.dp))
+//                    }
                 }
             }
         }

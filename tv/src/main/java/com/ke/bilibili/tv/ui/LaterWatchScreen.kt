@@ -16,8 +16,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Button
 import androidx.tv.material3.Text
+import com.ke.bilibili.tv.ui.component.VideoItem
+import com.ke.bilibili.tv.ui.component.VideoItemView
 import com.ke.biliblli.common.Screen
-import com.ke.biliblli.common.entity.VideoViewEntity
+import com.ke.biliblli.common.duration
+import com.ke.biliblli.common.format
 import com.ke.biliblli.viewmodel.LaterWatchState
 import com.ke.biliblli.viewmodel.LaterWatchViewModel
 
@@ -64,17 +67,31 @@ private fun LaterWatchScreen(
                 ) {
                     items(state.list) {
 
-                        val entity = VideoViewEntity(
-                            it.pic,
-                            it.stat.view,
-                            it.stat.danmaku,
-                            it.duration,
-                            it.title,
-                            it.owner.name
-                        )
-                        VideoItem(entity) {
+                        VideoItemView(
+                            VideoItem(
+                                title = it.title,
+                                image = it.pic,
+                                view = it.stat.view.format(),
+                                danmaku = it.stat.danmaku.format(),
+                                duration = it.duration.duration(),
+                                lastProgress = "",
+                                author = it.owner.name
+                            )
+                        ) {
                             toDetail(Screen.VideoInfo(it.bvid))
                         }
+
+//                        val entity = VideoViewEntity(
+//                            it.pic,
+//                            it.stat.view,
+//                            it.stat.danmaku,
+//                            it.duration,
+//                            it.title,
+//                            it.owner.name
+//                        )
+//                        VideoItem(entity) {
+//                            toDetail(Screen.VideoInfo(it.bvid))
+//                        }
                     }
                 }
             }

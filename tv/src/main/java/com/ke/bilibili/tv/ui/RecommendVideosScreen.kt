@@ -35,6 +35,8 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import coil.compose.AsyncImage
 import com.ke.bilibili.tv.observeWithLifecycle
+import com.ke.bilibili.tv.ui.component.VideoItem
+import com.ke.bilibili.tv.ui.component.VideoItemView
 import com.ke.bilibili.tv.ui.theme.BilibiliTheme
 import com.ke.biliblli.api.response.HomeRecommendResponse
 import com.ke.biliblli.api.response.VideoOwner
@@ -73,7 +75,20 @@ fun RecommendVideosRoute(
             val item = videos[it]!!
 
 
-            VideoItem(item, navigate = navigate)
+//            VideoItem(item, navigate = navigate)
+            VideoItemView(
+                VideoItem(
+                    title = item.title,
+                    image = item.pic,
+                    view = item.stat.view.format(),
+                    danmaku = item.stat.danmaku.format(),
+                    duration = item.duration.duration(),
+                    lastProgress = "",
+                    author = item.owner.name
+                )
+            ) {
+                navigate(Screen.VideoInfo(item.bvid))
+            }
         }
     }
 }

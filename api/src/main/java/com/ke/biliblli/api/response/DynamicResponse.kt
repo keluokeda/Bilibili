@@ -103,7 +103,14 @@ data class DynamicItemModuleDynamicMajorArchive(
     @JsonNames("duration_text")
     val duration: String,
     val title: String,
-    val cover: String
+    val cover: String,
+    val stat: DynamicItemModuleDynamicMajorArchiveStatus,
+)
+
+@Serializable
+data class DynamicItemModuleDynamicMajorArchiveStatus(
+    val danmaku: String,
+    val play: String
 )
 
 @Serializable

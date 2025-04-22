@@ -26,7 +26,9 @@ data class HistoryItem(
     val cover: String,
     val history: History,
     val duration: Long,
-    val progress: Long
+    val progress: Long,
+    @JsonNames("author_name")
+    val authorName: String
 )
 
 @Serializable
