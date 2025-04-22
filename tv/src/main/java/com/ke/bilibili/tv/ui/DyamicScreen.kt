@@ -14,10 +14,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AllOut
@@ -64,7 +64,7 @@ import java.util.UUID
 
 @Composable
 internal fun DynamicRoute(
-    state: LazyStaggeredGridState,
+    state: LazyGridState,
     navigate: (Any) -> Unit
 ) {
     val viewModel = hiltViewModel<DynamicViewModel>()
@@ -89,7 +89,7 @@ internal fun DynamicRoute(
 private fun DynamicScreen(
     uiState: DynamicState,
     list: LazyPagingItems<DynamicItem>,
-    state: LazyStaggeredGridState,
+    state: LazyGridState,
     navigate: (Any) -> Unit,
     updateCurrentUp: (DynamicUpItem?) -> Unit
 ) {
@@ -152,10 +152,12 @@ private fun DynamicScreen(
 //
 //        }
 
-        LazyVerticalStaggeredGrid(
-            columns = StaggeredGridCells.Fixed(3),
+        LazyVerticalGrid(
+//            columns = StaggeredGridCells.Fixed(3),
+            columns = GridCells.Fixed(3),
             contentPadding = PaddingValues(24.dp),
-            verticalItemSpacing = 16.dp,
+//            verticalItemSpacing = 16.dp,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
                 .fillMaxHeight()
@@ -202,16 +204,17 @@ private fun DynamicContent(
     paramsCallback: ((Any) -> Unit)? = null
 ) {
     val supportingContent =
-        item.module.author.time + (if (item.module.author.time.isNotEmpty() && item.module.author.action.isNotEmpty()) "-" else "") + item.module.author.action
+        item.module.author.time
+//    + (if (item.module.author.time.isNotEmpty() && item.module.author.action.isNotEmpty()) "-" else "") + item.module.author.action
 
     ListItem(
         selected = true, onClick = {},
         headlineContent = {
-            Text(item.module.author.name)
+            Text(item.module.author.name, maxLines = 1)
         },
         supportingContent = if (supportingContent.isEmpty()) null else {
             @Composable {
-                Text(supportingContent)
+                Text(supportingContent, maxLines = 1)
             }
         },
         leadingContent = {
@@ -328,10 +331,10 @@ private fun DynamicCardPreview() {
     )
 
     BilibiliTheme {
-        LazyVerticalStaggeredGrid(
-            columns = StaggeredGridCells.Fixed(3),
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(4),
             contentPadding = PaddingValues(16.dp),
-            verticalItemSpacing = 16.dp,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxSize()
         ) {

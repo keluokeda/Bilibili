@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -99,7 +98,7 @@ fun MainRoute(navigate: (Any) -> Unit) {
             }
         }
 
-        val dynamicState = rememberLazyStaggeredGridState()
+        val dynamicState = rememberLazyGridState()
 
         val recommendState = rememberLazyGridState()
 

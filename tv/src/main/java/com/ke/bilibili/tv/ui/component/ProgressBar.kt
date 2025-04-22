@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.ke.bilibili.tv.ui.theme.BilibiliPink
 import com.ke.bilibili.tv.ui.theme.BilibiliTheme
 
 @Composable
@@ -51,7 +52,7 @@ fun ProgressBar(
                     modifier = Modifier
                         .weight(progress)
                         .fillMaxHeight()
-                        .background(color = Color.Green)
+                        .background(color = BilibiliPink)
                 )
             if (progress != 1f)
                 Spacer(modifier = Modifier.weight(1 - progress))

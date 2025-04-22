@@ -44,6 +44,14 @@ class BilibiliStorageImpl @Inject constructor(
             }
         }
 
+    override var playerViewShowMiniProgressBar: Boolean
+        get() = sharedPreferences.getBoolean("playerViewShowMiniProgressBar", true)
+        set(value) {
+            sharedPreferences.edit(commit = true) {
+                putBoolean("playerViewShowMiniProgressBar", value)
+            }
+        }
+
     override var mainDefaultTab: Int
         get() = sharedPreferences.getInt("mainDefaultTab", 1)
         set(value) {

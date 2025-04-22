@@ -361,6 +361,21 @@ private fun VideoDetailScreen(
 
                             }
                         }
+                    } else if (uiState.playerViewShowMiniProgressBar) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(8.dp)
+                                .align(Alignment.BottomCenter)
+                        ) {
+                            ProgressBar(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                max = uiState.player.duration,
+                                current = uiState.player.currentPosition
+                            )
+                        }
+
                     }
                 }
 

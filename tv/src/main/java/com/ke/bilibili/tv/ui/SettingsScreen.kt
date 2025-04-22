@@ -84,6 +84,8 @@ fun SettingsRoute(navigate: (Any) -> Unit) {
         viewModel.handleAction(SettingsAction.SetDefaultTab(it))
     }, {
         viewModel.handleAction(SettingsAction.ClearCache)
+    }, {
+        viewModel.handleAction(SettingsAction.SetPlayerViewShowMiniProgressBar(it))
     })
 
     if (state.loading) {
@@ -112,7 +114,8 @@ private fun SettingsScreen(
     navigate: (Any) -> Unit,
     logout: () -> Unit,
     setDefaultTab: (MainTab) -> Unit,
-    clearCache: () -> Unit
+    clearCache: () -> Unit,
+    setPlayerViewShowMiniProgressBar: (Boolean) -> Unit
 ) {
 
 
@@ -223,6 +226,24 @@ private fun SettingsScreen(
                 Text("彩色弹幕", style = titleTextStyle.copy(color = Color.Unspecified))
             }, trailingContent = {
                 Switch(checked = state.danmakuColorful, onCheckedChange = {
+
+                })
+            })
+
+        }
+
+        item {
+
+
+            ListItem(selected = false, onClick = {
+                setPlayerViewShowMiniProgressBar(!state.playerViewShowMiniProgressBar)
+            }, modifier = columnModifier, headlineContent = {
+                Text(
+                    "播放页面底部迷你进度条",
+                    style = titleTextStyle.copy(color = Color.Unspecified)
+                )
+            }, trailingContent = {
+                Switch(checked = state.playerViewShowMiniProgressBar, onCheckedChange = {
 
                 })
             })

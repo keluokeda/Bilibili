@@ -36,6 +36,9 @@ interface BilibiliStorage {
      */
     var directPlay: Boolean
 
+
+    var playerViewShowMiniProgressBar: Boolean
+
 //    var uid: Long
 //
 //    var eid: String?

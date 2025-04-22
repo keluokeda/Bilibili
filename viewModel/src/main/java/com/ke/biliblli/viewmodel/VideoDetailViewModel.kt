@@ -309,7 +309,8 @@ class VideoDetailViewModel @Inject constructor(
                         audioResolutionList = audioList,
                         currentAudioResolution = audioList.first(),
                         danmakuEnable = bilibiliStorage.danmakuEnable,
-                        danmakuPosition = bilibiliStorage.danmakuPosition
+                        danmakuPosition = bilibiliStorage.danmakuPosition,
+                        playerViewShowMiniProgressBar = bilibiliStorage.playerViewShowMiniProgressBar
                     ).apply {
                         play(
                             currentVideoResolution.url,
@@ -508,7 +509,8 @@ sealed interface VideoDetailState {
         val showProgress: Boolean = false,
         val isPlaying: Boolean = true,
         val currentPosition: Long = 0,
-        val playbackState: Int = Player.STATE_BUFFERING
+        val playbackState: Int = Player.STATE_BUFFERING,
+        val playerViewShowMiniProgressBar: Boolean = false
     ) :
         VideoDetailState
 }

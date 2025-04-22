@@ -24,8 +24,14 @@ class SettingsViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : BaseViewModel<SettingsState, SettingsAction, SettingsEvent>(
     SettingsState(
-        VideoResolution.P1080, DanmakuSpeed.Normal, DanmakuDensity.Normal,
-        DanmakuPosition.Full, DanmakuFontSize.Medium, false, false
+        VideoResolution.P1080,
+        DanmakuSpeed.Normal,
+        DanmakuDensity.Normal,
+        DanmakuPosition.Full,
+        DanmakuFontSize.Medium,
+        false,
+        false,
+        playerViewShowMiniProgressBar = false
     )
 ) {
 
@@ -44,7 +50,8 @@ class SettingsViewModel @Inject constructor(
             bilibiliStorage.danmakuEnable,
             bilibiliStorage.danmakuColorful,
             defaultTab = MainTab.entries.first { it.index == bilibiliStorage.mainDefaultTab },
-            cacheSize = context.cacheSize()
+            cacheSize = context.cacheSize(),
+            playerViewShowMiniProgressBar = bilibiliStorage.playerViewShowMiniProgressBar
         )
     }
 
@@ -118,6 +125,10 @@ class SettingsViewModel @Inject constructor(
 //                context.externalCacheDir?.delete()
                 clearCache(context)
             }
+
+            is SettingsAction.SetPlayerViewShowMiniProgressBar -> {
+                bilibiliStorage.playerViewShowMiniProgressBar = action.value
+            }
         }
 
         refresh()
@@ -159,7 +170,8 @@ data class SettingsState(
     val danmakuColorful: Boolean,
     val loading: Boolean = false,
     val defaultTab: MainTab = MainTab.Recommend,
-    val cacheSize: String = "0MB"
+    val cacheSize: String = "0MB",
+    val playerViewShowMiniProgressBar: Boolean
 )
 
 sealed interface SettingsAction {
@@ -184,6 +196,8 @@ sealed interface SettingsAction {
 
     data object ClearCache : SettingsAction
 
+
+    data class SetPlayerViewShowMiniProgressBar(val value: Boolean) : SettingsAction
 }
 
 sealed interface SettingsEvent {

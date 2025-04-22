@@ -9,12 +9,17 @@ import androidx.paging.cachedIn
 import com.ke.biliblli.api.response.FavResourceMediaResponse
 import com.ke.biliblli.api.response.UserFavResponse
 import com.ke.biliblli.common.BilibiliRepository
+import com.ke.biliblli.common.CrashHandler
 import com.ke.biliblli.common.Screen
+import com.ke.biliblli.common.event.MainTab
+import com.ke.biliblli.common.event.MainTabChanged
 import com.ke.biliblli.repository.paging.FavResourceListPagingSource
 import com.ke.biliblli.viewmodel.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 import javax.inject.Inject
 
 @HiltViewModel
@@ -43,18 +48,33 @@ class MyFavViewModel @Inject constructor(
         FavResourceListPagingSource(bilibiliRepository, uiState.value.selected?.id ?: 0)
     }.flow.cachedIn(viewModelScope)
 
+
+    @Subscribe
+    fun onTabChanged(event: MainTabChanged) {
+        if (event.tab == MainTab.Fav) {
+            refresh()
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        EventBus.getDefault().unregister(this)
+    }
+
     init {
+
+        EventBus.getDefault().register(this)
+        refresh()
+    }
+
+    private fun refresh() {
         viewModelScope.launch {
             try {
                 val list = bilibiliRepository.userFav(userId).data!!.list
-
-//                bilibiliRepository.favDetail(list.first().id, 1, 20)
-
                 _uiState.value = MyFavState(list, list.first())
-
                 _event.send(Unit)
             } catch (e: Exception) {
-
+                CrashHandler.handler(e)
             }
         }
     }
