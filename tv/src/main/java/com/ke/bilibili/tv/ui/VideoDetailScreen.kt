@@ -78,10 +78,7 @@ internal fun VideoDetailRoute(
             is VideoDetailEvent.ShootDanmaku -> {
                 val item = DanmakuItem(
                     id = it.item.id.toString(),
-//                    color = it.item.color,
-                    color = if (config.colorful) it.item.rgb() else Triple(
-                        0xFF, 0xFF, 0xFF
-                    ),
+                    color = it.item.rgb(config.colorful),
                     fontSize = (it.item.fontSize * config.fontSize.ratio).toInt(),
                     content = it.item.content,
                     duration = config.speed.duration
@@ -165,8 +162,8 @@ private fun VideoDetailScreen(
                             .fillMaxSize()
                             .onKeyEvent {
 
-                                if ((it.key == Key.Menu || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyUp) {
-                                    setControllerVisible(!uiState.showController)
+                                return@onKeyEvent if ((it.key == Key.Menu || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyUp) {
+                                    setControllerVisible(true)
                                     true
                                 } else if (it.key == Key.DirectionRight && it.type == KeyEventType.KeyDown) {
                                     setSpeedPlay(true)
@@ -180,8 +177,10 @@ private fun VideoDetailScreen(
                                 } else if (it.key == Key.DirectionLeft && it.type == KeyEventType.KeyUp) {
                                     backward()
                                     true
+                                } else {
+                                    false
                                 }
-                                false
+
                             }
                             .focusable()
                     },
@@ -211,15 +210,17 @@ private fun VideoDetailScreen(
                                     .align(Alignment.TopCenter)
                         ) {
 
-                            DanmakuView(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(
-                                        maxHeight / uiState.danmakuPosition.code
-                                    )
-                            ) {
-                                receiver(it)
-                            }
+//                            DanmakuView(
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                                    .height(
+//                                        maxHeight / uiState.danmakuPosition.code
+//                                    )
+//                            ) {
+//                                receiver(it)
+//                            }
+
+                            DanmakuView()
                         }
 
 

@@ -32,10 +32,10 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
 
-    private val mainViewModel by viewModels<MainViewModel>()
-
-    @Inject
-    lateinit var bilibiliRepository: BilibiliRepository
+//    private val mainViewModel by viewModels<MainViewModel>()
+//
+//    @Inject
+//    lateinit var bilibiliRepository: BilibiliRepository
 
     @OptIn(ExperimentalTvMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {

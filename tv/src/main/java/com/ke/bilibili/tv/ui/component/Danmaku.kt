@@ -1,13 +1,18 @@
 package com.ke.bilibili.tv.ui.component
 
+import androidx.annotation.OptIn
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateIntOffsetAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -17,9 +22,14 @@ import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.media3.common.util.UnstableApi
 import androidx.tv.material3.Text
+import com.ke.biliblli.viewmodel.VideoDetailViewModel
 import kotlinx.serialization.Serializable
 import kotlin.random.Random
 
@@ -170,3 +180,66 @@ data class DanmakuItem(
     val duration: Long = 10000,
     var percent: Int = 100
 )
+
+@OptIn(UnstableApi::class)
+@Composable
+fun DanmakuView() {
+    val viewModel = hiltViewModel<VideoDetailViewModel>()
+    val danmakuItems by viewModel.danmakuItemsForDisplay.collectAsStateWithLifecycle()
+
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        this.constraints.maxHeight
+        danmakuItems.forEach {
+
+            key(it.id) {
+
+                val content = @Composable {
+                    Text(
+                        it.content, style = TextStyle(
+                            color = it.fontColor.toColor(),
+                            fontSize = it.fontSize.sp
+                        )
+                    )
+                }
+
+                if (it.selfWidth == 0) {
+                    MeasureUnconstrainedViewWidth(viewToMeasure = content) { width ->
+                        viewModel.onDanmakuSizeMeasured(
+                            it,
+                            constraints.maxWidth,
+                            width.value.toInt()
+                        )
+
+                        Box(
+                            modifier = Modifier.offset(
+                                x = maxWidth, y = this.maxHeight * it.offsetYPercent
+                            )
+                        ) {
+                            content()
+                        }
+                    }
+                } else {
+                    val offset by animateIntOffsetAsState(
+                        IntOffset(it.offsetX, (this.maxHeight * it.offsetYPercent).value.toInt()),
+                        label = "animateOffsetAsState",
+                        animationSpec = tween(
+                            durationMillis = it.duration.toInt(),
+                            easing = LinearEasing
+                        )
+                    )
+
+                    Box(modifier = Modifier.offset {
+                        offset
+                    }) {
+                        content()
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+private fun Triple<Int, Int, Int>.toColor(): Color {
+    return Color(first, second, third)
+}
