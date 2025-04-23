@@ -14,13 +14,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,7 +37,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -46,7 +50,10 @@ import androidx.tv.material3.ListItem
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import coil.compose.AsyncImage
+import com.ke.bilibili.tv.ui.component.Loading
+import com.ke.bilibili.tv.ui.theme.BilibiliPink
 import com.ke.biliblli.common.Screen
+import com.ke.biliblli.common.duration
 import com.ke.biliblli.viewmodel.TvVideoInfoState
 import com.ke.biliblli.viewmodel.TvVideoInfoViewModel
 
@@ -74,7 +81,7 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
             }
 
             TvVideoInfoState.Loading -> {
-                Text(stringResource(com.ke.bilibili.tv.R.string.loading))
+                Loading()
             }
 
             is TvVideoInfoState.Success -> {
@@ -215,12 +222,6 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                                 val focusRequester = remember {
                                     FocusRequester()
                                 }
-
-//                                LaunchedEffect(Unit) {
-//                                    delay(10)
-//                                    focusRequester.requestFocus()
-//                                }
-
                                 Button(onClick = {
                                     navigate(
                                         Screen.VideoDetail(
@@ -240,13 +241,25 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                                     Icon(Icons.AutoMirrored.Filled.Comment, null)
                                     Text("评论")
                                 }
+
+                                Button(onClick = {}, enabled = false) {
+                                    Icon(Icons.Default.History, null)
+                                    Text(uiState.info.view.duration.duration())
+                                }
+
+                                Button(onClick = {}, enabled = false) {
+                                    Icon(Icons.Default.CalendarMonth, null)
+                                    Text(uiState.info.view.timeText())
+                                }
                             }
                         }
 
                         item {
-                            ListItem(
-                                selected = false, onClick = {
-                                    val owner = uiState.info.view.owner
+                            val owner = uiState.info.view.owner
+                            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+
+
+                                AssistChip(onClick = {
                                     navigate(
                                         Screen.UserDetail(
                                             owner.mid,
@@ -255,9 +268,7 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                                             ""
                                         )
                                     )
-                                }, headlineContent = {
-                                    Text(uiState.info.view.owner.name)
-                                }, leadingContent = {
+                                }, leadingIcon = {
                                     AsyncImage(
                                         model = uiState.info.view.owner.face,
                                         contentDescription = null,
@@ -270,8 +281,38 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                                     if (it.hasFocus) {
                                         backgroundImage = uiState.info.view.pic
                                     }
+                                }) {
+                                    Text(owner.name)
                                 }
-                            )
+                            }
+//                            ListItem(
+//                                selected = false, onClick = {
+//                                    val owner = uiState.info.view.owner
+//                                    navigate(
+//                                        Screen.UserDetail(
+//                                            owner.mid,
+//                                            owner.name,
+//                                            owner.face,
+//                                            ""
+//                                        )
+//                                    )
+//                                }, headlineContent = {
+//                                    Text(uiState.info.view.owner.name)
+//                                }, leadingContent = {
+//                                    AsyncImage(
+//                                        model = uiState.info.view.owner.face,
+//                                        contentDescription = null,
+//                                        modifier = Modifier
+//                                            .size(40.dp)
+//                                            .clip(CircleShape)
+//                                            .background(color = Color.Gray)
+//                                    )
+//                                }, modifier = Modifier.onFocusChanged {
+//                                    if (it.hasFocus) {
+//                                        backgroundImage = uiState.info.view.pic
+//                                    }
+//                                }
+//                            )
                         }
 
 
@@ -280,7 +321,7 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 modifier = Modifier
                                     .padding(16.dp)
-                                    .padding(horizontal = 8.dp)
+//                                    .padding(horizontal = 8.dp)
                                     .onFocusChanged {
                                         if (it.hasFocus) {
                                             backgroundImage = uiState.info.view.pic
@@ -300,27 +341,65 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
 
                         if (uiState.pageList.size > 1) {
                             item {
-                                Text(
-                                    "视频选集",
-                                    style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
-                                    modifier = Modifier.padding(16.dp)
-                                )
+                                ListItem(selected = false, onClick = {
+//                                    val list = uiState.info.view.ugcSeason!!.allVideos()
+//                                    val playlist = mutableListOf<String>()
+//                                    var foundTarget = false
+//                                    list.forEach {
+//                                        if (it.cid == uiState.info.view.cid) {
+////                                            playlist.add()
+//                                            foundTarget = true
+//                                        } else if (foundTarget) {
+//                                            playlist.add(it.bvid)
+//                                        }
+//                                    }
+//
+//                                    navigate(Screen.VideoDetail(bvid = uiState.info.view.bvid, cid = uiState.info.view.cid, aid = uiState.info.view.aid,playlist))
+                                }, headlineContent = {
+                                    Text("视频选集")
+                                }, trailingContent = {
+//                                    Text("播放全部")
+                                })
                             }
 
+
+
                             item {
+                                val lazyListState = remember { LazyListState() }
+
+                                LaunchedEffect(Unit) {
+                                    val index = uiState.pageList.indexOfFirst {
+                                        it.cid == uiState.info.view.cid
+                                    }
+                                    if (index != -1) {
+                                        lazyListState.scrollToItem(index)
+                                    }
+                                }
+
                                 LazyRow(
                                     contentPadding = PaddingValues(16.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                    state = lazyListState
                                 ) {
                                     items(uiState.pageList) {
                                         Card(
                                             onClick = {
 //                                            navigate(Screen.VideoInfo(it.bvid))
+                                                val cidList = mutableListOf<Long>()
+                                                var found = false
+                                                uiState.pageList.forEach { page ->
+                                                    if (found) {
+                                                        cidList.add(page.cid)
+                                                    } else if (page.cid == it.cid) {
+                                                        found = true
+                                                    }
+                                                }
+
                                                 navigate(
                                                     Screen.VideoDetail(
                                                         uiState.info.view.bvid,
                                                         it.cid,
-                                                        uiState.info.view.aid
+                                                        uiState.info.view.aid, cidList = cidList
                                                     )
                                                 )
                                             },
@@ -346,7 +425,8 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                                             Text(
                                                 it.part,
                                                 maxLines = 1,
-                                                modifier = Modifier.padding(8.dp)
+                                                modifier = Modifier.padding(8.dp),
+                                                style = TextStyle(color = if (it.cid == uiState.info.view.cid) BilibiliPink else Color.White)
                                             )
                                         }
                                     }
@@ -356,15 +436,51 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
 
                         if (uiState.info.view.ugcSeason != null) {
                             item {
-                                Text(
-                                    "合集",
-                                    style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
-                                    modifier = Modifier.padding(16.dp)
-                                )
+                                ListItem(selected = false, onClick = {
+                                    val list = uiState.info.view.ugcSeason!!.allVideos()
+                                    val playlist = mutableListOf<String>()
+                                    var foundTarget = false
+                                    list.forEach {
+                                        if (it.cid == uiState.info.view.cid) {
+//                                            playlist.add()
+                                            foundTarget = true
+                                        } else if (foundTarget) {
+                                            playlist.add(it.bvid)
+                                        }
+                                    }
+
+                                    navigate(
+                                        Screen.VideoDetail(
+                                            bvid = uiState.info.view.bvid,
+                                            cid = uiState.info.view.cid,
+                                            aid = uiState.info.view.aid,
+                                            playlist
+                                        )
+                                    )
+                                }, headlineContent = {
+                                    Text("合集")
+                                }, trailingContent = {
+                                    Text("从当前位置播放全部")
+                                })
                             }
 
                             item {
+
+
+                                val lazyListState = remember { LazyListState() }
+
+                                LaunchedEffect(Unit) {
+                                    val index =
+                                        uiState.info.view.ugcSeason!!.allVideos().indexOfFirst {
+                                            it.cid == uiState.info.view.cid
+                                        }
+                                    if (index != -1) {
+                                        lazyListState.scrollToItem(index)
+                                    }
+                                }
+
                                 LazyRow(
+                                    state = lazyListState,
                                     contentPadding = PaddingValues(16.dp),
                                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                                 ) {
@@ -392,6 +508,9 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
                                             Text(
                                                 it.title,
                                                 maxLines = 1,
+                                                style = MaterialTheme.typography.bodyLarge.copy(
+                                                    color = if (uiState.info.view.cid == it.cid) BilibiliPink else Color.White
+                                                ),
                                                 modifier = Modifier.padding(8.dp)
                                             )
                                         }
@@ -402,11 +521,26 @@ private fun VideoInfoScreen(uiState: TvVideoInfoState, retry: () -> Unit, naviga
 
 
                         item {
-                            Text(
-                                "推荐视频",
-                                style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
-                                modifier = Modifier.padding(16.dp)
-                            )
+//                            Text(
+//                                "推荐视频",
+//                                style = MaterialTheme.typography.titleLarge.copy(color = Color.White),
+//                                modifier = Modifier.padding(16.dp)
+//                            )
+                            ListItem(selected = false, onClick = {
+                                val list = uiState.info.related.map {
+                                    Screen.VideoDetail(it.bvid, it.cid, it.aid)
+                                }.toMutableList()
+                                val target = list.removeAt(0)
+
+                                navigate(
+                                    target.copy(
+                                    playlist = list.map { it.bvid }
+                                ))
+                            }, headlineContent = {
+                                Text("推荐视频")
+                            }, trailingContent = {
+                                Text("播放全部")
+                            })
                         }
 
                         item {

@@ -5,6 +5,10 @@ package com.ke.biliblli.api.response
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
+import java.text.SimpleDateFormat
+import java.util.Date
+
+private val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
 @Serializable
 data class VideoDetailViewResponse(
@@ -35,7 +39,11 @@ data class VideoDetailViewResponse(
     val pages: List<VideoViewPage>? = null,
     @JsonNames("ugc_season")
     val ugcSeason: VideoViewUcgSeasonList? = null
-)
+) {
+    fun timeText(): String {
+        return simpleDateFormat.format(Date(ctime * 1000))
+    }
+}
 
 
 @Serializable

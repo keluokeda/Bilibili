@@ -1,6 +1,10 @@
 package com.ke.biliblli.viewmodel
 
 import android.content.Context
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.TextUnit
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
@@ -23,9 +27,7 @@ import com.ke.biliblli.common.CrashHandler
 import com.ke.biliblli.common.Screen
 import com.ke.biliblli.common.entity.BilibiliDanmaku
 import com.ke.biliblli.common.entity.DanmakuDensity
-import com.ke.biliblli.common.entity.DanmakuFontSize
 import com.ke.biliblli.common.entity.DanmakuPosition
-import com.ke.biliblli.common.entity.DanmakuSpeed
 import com.ke.biliblli.common.entity.VideoResolution
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -41,7 +43,7 @@ import kotlin.random.Random
 
 
 private const val minRatio = 1.0f
-
+const val danmakuItemHeight = 72
 
 val audioResolutionPairList = listOf<Triple<Int, Int, String>>(
     Triple(0, 30216, "64K"),
@@ -73,19 +75,15 @@ class VideoDetailViewModel @Inject constructor(
     ) :
     BaseViewModel<VideoDetailState, VideoDetailAction, VideoDetailEvent>(VideoDetailState.Loading) {
 
-    private val params = savedStateHandle.toRoute<Screen.VideoDetail>()
+    private var params = savedStateHandle.toRoute<Screen.VideoDetail>()
+
+    private val playlist = params.playlist.toMutableList()
+    private val cidList = params.cidList.toMutableList()
 
 
-//    private val _config = MutableStateFlow(
-//        DanmakuTextConfig(
-//            bilibiliStorage.danmakuFontSize,
-//            bilibiliStorage.danmakuColorful,
-//            bilibiliStorage.danmakuSpeed
-//        )
-//    )
-//
-//
-//    val config = _config.asStateFlow()
+//    private fun canBack(): Boolean{
+//        return playlist.isEmpty() && cidList.isEmpty()
+//    }
 
     private val dataSourceFactory: DataSource.Factory =
         DefaultHttpDataSource.Factory()
@@ -95,6 +93,15 @@ class VideoDetailViewModel @Inject constructor(
                     "referer" to "https://www.bilibili.com"
                 )
             )
+
+    private var danmakuViewHeight = 0
+    private var danmakuViewWidth = 0
+
+    fun onDanmakuViewGloballyPositioned(coordinates: LayoutCoordinates) {
+//        Logger.d("onDanmakuViewGloballyPositioned $coordinates")
+        danmakuViewHeight = coordinates.size.height
+        danmakuViewWidth = coordinates.size.width
+    }
 
     private val analyticsListener = object : AnalyticsListener {
     }
@@ -130,7 +137,20 @@ class VideoDetailViewModel @Inject constructor(
 
             if (playbackState == Player.STATE_ENDED) {
                 viewModelScope.launch {
-                    _event.send(VideoDetailEvent.BackToInfo)
+                    if (playlist.isNotEmpty()) {
+//                        _event.send(VideoDetailEvent.BackToInfo)
+                        loadParamsFromPlaylist(playlist.removeAt(0))
+                    } else if (cidList.isNotEmpty()) {
+                        params = params.copy(
+                            cid = cidList.removeAt(0)
+                        )
+
+                        refresh()
+                    } else {
+                        _event.send(VideoDetailEvent.BackToInfo)
+                    }
+
+
                 }
             }
 
@@ -144,18 +164,51 @@ class VideoDetailViewModel @Inject constructor(
 
     }
 
+    private var currentBvid: String = ""
+
+    private suspend fun loadParamsFromPlaylist(bvid: String) {
+        try {
+            _uiState.value = VideoDetailState.Loading
+            currentBvid = bvid
+            val data = bilibiliRepository.videoView(bvid).data!!
+
+            params = Screen.VideoDetail(bvid, data.cid, data.aid)
+
+            initPlayer(data.cid, data.bvid)
+
+        } catch (e: Exception) {
+            CrashHandler.handler(e)
+            _uiState.value = VideoDetailState.Error
+        }
+    }
+
     private val _danmakuItemsForDisplay = MutableStateFlow(listOf<DanmakuItem>())
 
     val danmakuItemsForDisplay = _danmakuItemsForDisplay.asStateFlow()
 
-    fun onDanmakuSizeMeasured(danmakuItem: DanmakuItem, parentWidth: Int, selfWidth: Int) {
+    /**
+     * @param parentWidth 父组件宽度
+     * @param position 在父组件中的位置
+     * @param size 自身的大小
+     */
+    fun onDanmakuSizeMeasured(
+        danmakuItem: DanmakuItem,
+        parentWidth: Int,
+        parentHeight: Int,
+        position: IntOffset,
+        size: IntSize
+    ) {
+//        val selfWidth = size.width
         val startTime = player.currentPosition
         val newValue = danmakuItem.copy(
             parentWidth = parentWidth,
-            selfWidth = selfWidth,
-            offsetX = parentWidth,
+            selfWidth = size.height,
+            selfHeight = size.height,
+            parentHeight = parentHeight,
+            offsetX = danmakuViewWidth,
+            offsetY = position.y,
             startTime = startTime,
-            lastUpdateTime = startTime
+            lastUpdateTime = startTime,
         )
 
         _danmakuItemsForDisplay.update {
@@ -166,7 +219,7 @@ class VideoDetailViewModel @Inject constructor(
         }
     }
 
-    private val fontSizeRatio = bilibiliStorage.danmakuFontSize
+    private val danmakuFontSize = bilibiliStorage.danmakuFontSize
     private val colorful = bilibiliStorage.danmakuColorful
     private val danmakuSpeed = bilibiliStorage.danmakuSpeed
     private val danmakuDensity = bilibiliStorage.danmakuDensity
@@ -187,7 +240,7 @@ class VideoDetailViewModel @Inject constructor(
 
         _danmakuItemsForDisplay.update { list ->
 
-            list.filter {
+            val oldList = list.filter {
                 currentPosition - it.startTime < danmakuSpeed.duration && currentPosition - it.startTime > 0
             }
                 .map {
@@ -207,22 +260,82 @@ class VideoDetailViewModel @Inject constructor(
                     } else {
                         it
                     }
-                } + targetList
+                }.toMutableList()
+
+            targetList
                 .filterIndexed { index, item ->
                     danmakuDensity == DanmakuDensity.Normal ||
                             index % danmakuDensity.code == 0
                 }
-                .map {
-                    DanmakuItem(
-                        id = it.id,
-                        content = it.content,
-                        fontSize = it.fontSize * fontSizeRatio.ratio,
-                        fontColor = it.rgb(colorful)
-                    )
+                .forEach {
+
+                    val trackIndex =
+                        computeDanmakuTrackIndex(oldList, danmakuFontSize.textSize.value.toInt())
+
+                    if (trackIndex != null) {
+                        val item = DanmakuItem(
+                            id = it.id,
+                            content = it.content,
+                            textSize = danmakuFontSize.textSize,
+                            fontColor = it.rgb(colorful),
+                            trackIndex = trackIndex,
+                            offsetX = danmakuViewWidth
+                        )
+
+                        oldList.add(item)
+                    }
+
+
                 }
+
+            oldList
         }
     }
 
+
+    /**
+     * 计算弹幕应该在第几条轨道上
+     */
+    private fun computeDanmakuTrackIndex(
+        oldList: List<DanmakuItem>,
+        danmakuItemHeight: Int = 72
+    ): Int? {
+        if (oldList.isEmpty()) {
+            return 1
+        }
+
+        if (danmakuViewHeight == 0) {
+            return Random(10).nextInt()
+        }
+
+        val count = danmakuViewHeight / danmakuItemHeight
+
+        val usedTracks = oldList.map {
+            it.trackIndex
+        }.distinct()
+
+        if (usedTracks.size < count - 1) {
+            //还有可用的轨道 返回可用的轨道
+            return List(count - 1) {
+                it
+            }.filter {
+                !usedTracks.contains(it)
+            }.random()
+        }
+
+        return oldList.groupBy {
+            it.trackIndex
+        }.map { map ->
+            map.key to (map.value.maxOfOrNull {
+                it.selfWidth + it.offsetX
+            } ?: 0)
+
+        }.filter {
+            it.second < danmakuViewWidth
+        }.map {
+            it.first
+        }.randomOrNull()
+    }
 
     private val _bilibiliDanmakuList = mutableListOf<BilibiliDanmaku>()
 
@@ -233,6 +346,7 @@ class VideoDetailViewModel @Inject constructor(
     private fun loadDanmakuList(id: Long) {
         viewModelScope.launch {
             _bilibiliDanmakuList.clear()
+            _danmakuItemsForDisplay.value = emptyList()
             var index = 1
             while (true) {
                 try {
@@ -254,21 +368,6 @@ class VideoDetailViewModel @Inject constructor(
 
     }
 
-//    private val danmakuDensity = bilibiliStorage.danmakuDensity
-
-//    private fun shootDanmaku(index: Int, danmaku: BilibiliDanmaku) {
-//
-//        if (danmakuDensity == DanmakuDensity.Half && index % 2 != 0) {
-//            return
-//        } else if (danmakuDensity == DanmakuDensity.Less && index % 3 != 0) {
-//            return
-//        }
-//
-//        viewModelScope.launch {
-//            delay(danmaku.progress.toLong())
-//            _event.send(VideoDetailEvent.ShootDanmaku(danmaku))
-//        }
-//    }
 
     private val renderersFactory =
         DefaultRenderersFactory(context).forceEnableMediaCodecAsynchronousQueueing()
@@ -350,71 +449,15 @@ class VideoDetailViewModel @Inject constructor(
 
     private fun refresh() {
         viewModelScope.launch {
-            _uiState.value = VideoDetailState.Loading
+
 
             try {
 //                val view = bilibiliRepository.videoView(params.bvid).data!!
 
+                val cid = params.cid
+                val bvid = params.bvid
 
-                val response = bilibiliRepository.videoUrl(params.cid, params.bvid).data!!
-
-
-                loadDanmakuList(params.cid)
-
-
-
-                response.dash.run {
-
-                    val videoList = video.map { dashVideo ->
-                        val text = VideoResolution.entries.first {
-                            it.code == dashVideo.id
-                        }
-
-                        Resolution(text, dashVideo.baseUrl)
-                    }.distinctBy {
-                        it.videoResolution.code
-                    }.sortedByDescending { it.videoResolution.code }
-
-
-//                    Logger.d(audio.map {
-//                        it.id
-//                    })
-
-                    val audioList = (audio + (dolby?.audio ?: emptyList())).map { audio ->
-                        val triple = audioResolutionPairList.first {
-                            it.second == audio.id
-                        }
-
-                        AudioResolution(audio.id, triple.third, audio.baseUrl) to triple.first
-                    }.sortedByDescending {
-                        it.second
-                    }.map {
-                        it.first
-                    }
-                        .distinctBy {
-                            it.id
-                        }
-
-                    _uiState.value = VideoDetailState.Content(
-                        player,
-                        videoResolutionList = videoList,
-                        currentVideoResolution = videoList.firstOrNull {
-                            it.videoResolution == bilibiliStorage.videoResolution
-                        } ?: videoList.first(),
-                        audioResolutionList = audioList,
-                        currentAudioResolution = audioList.first(),
-                        danmakuEnable = bilibiliStorage.danmakuEnable,
-                        danmakuPosition = bilibiliStorage.danmakuPosition,
-                        playerViewShowMiniProgressBar = bilibiliStorage.playerViewShowMiniProgressBar
-                    ).apply {
-                        play(
-                            currentVideoResolution.url,
-                            audioList.first().url,
-                            startPositionMs = if (abs(response.dash.duration - response.lastPlayTime / 1000) < 5) 0 else response.lastPlayTime
-                        )
-                    }
-
-                }
+                initPlayer(cid, bvid)
 
             } catch (e: Exception) {
 //                e.printStackTrace()
@@ -424,11 +467,73 @@ class VideoDetailViewModel @Inject constructor(
         }
     }
 
+    /**
+     * 初始化播放器
+     */
+    private suspend fun initPlayer(cid: Long, bvid: String) {
+        _uiState.value = VideoDetailState.Loading
+
+        val response = bilibiliRepository.videoUrl(cid, bvid).data!!
+        loadDanmakuList(cid)
+        response.dash.run {
+            val videoList = video.map { dashVideo ->
+                val text = VideoResolution.entries.first {
+                    it.code == dashVideo.id
+                }
+
+                Resolution(text, dashVideo.baseUrl)
+            }.distinctBy {
+                it.videoResolution.code
+            }.sortedByDescending { it.videoResolution.code }
+            val audioList = (audio + (dolby?.audio ?: emptyList())).map { audio ->
+                val triple = audioResolutionPairList.first {
+                    it.second == audio.id
+                }
+
+                AudioResolution(audio.id, triple.third, audio.baseUrl) to triple.first
+            }.sortedByDescending {
+                it.second
+            }.map {
+                it.first
+            }
+                .distinctBy {
+                    it.id
+                }
+
+            _uiState.value = VideoDetailState.Content(
+                player,
+                videoResolutionList = videoList,
+                currentVideoResolution = videoList.firstOrNull {
+                    it.videoResolution == bilibiliStorage.videoResolution
+                } ?: videoList.first(),
+                audioResolutionList = audioList,
+                currentAudioResolution = audioList.first(),
+                danmakuEnable = bilibiliStorage.danmakuEnable,
+                danmakuPosition = bilibiliStorage.danmakuPosition,
+                playerViewShowMiniProgressBar = bilibiliStorage.playerViewShowMiniProgressBar
+            ).apply {
+                play(
+                    currentVideoResolution.url,
+                    audioList.first().url,
+                    startPositionMs = if (abs(response.dash.duration - response.lastPlayTime / 1000) < 5) 0 else response.lastPlayTime
+                )
+            }
+
+        }
+    }
+
     override fun handleAction(action: VideoDetailAction) {
 
         when (action) {
             VideoDetailAction.Retry -> {
-                refresh()
+                if (currentBvid.isEmpty()) {
+                    refresh()
+                } else {
+                    viewModelScope.launch {
+                        loadParamsFromPlaylist(bvid = currentBvid)
+                    }
+                }
+
             }
 
             is VideoDetailAction.SetFullScreen -> {
@@ -469,16 +574,6 @@ class VideoDetailViewModel @Inject constructor(
             }
 
             VideoDetailAction.ShowVideoResolutionListDialog -> {
-//                viewModelScope.launch {
-//                    (uiState.value as? VideoDetailState.Content)?.apply {
-//                        _event.send(
-//                            ShowVideoResolutionListDialog(
-//                                videoResolutionList,
-//                                currentVideoResolution
-//                            )
-//                        )
-//                    }
-//                }
             }
 
             is VideoDetailAction.UpdateVideoResolution -> {
@@ -589,7 +684,7 @@ data class DanmakuItem(
     /**
      * 弹幕字体大小
      */
-    val fontSize: Float,
+    val textSize: TextUnit,
     /**
      * 弹幕颜色
      */
@@ -599,22 +694,24 @@ data class DanmakuItem(
      */
     val selfWidth: Int = 0,
     val parentWidth: Int = 0,
+    val selfHeight: Int = 0,
+    val parentHeight: Int = 0,
     /**
      * 开始显示时间
      */
     val startTime: Long = System.currentTimeMillis(),
 //    val onShowTime: Long,
     val offsetX: Int = 0,
+    val offsetY: Int = 0,
+    /**
+     * 弹幕在第几条轨道
+     */
+    val trackIndex: Int = 1,
     var lastUpdateTime: Long = 0,
     var duration: Long = 0,
-    val offsetYPercent: Float = Random.nextFloat()
+//    val offsetYPercent: Float = Random.nextFloat()
 )
 
-data class DanmakuTextConfig(
-    val fontSize: DanmakuFontSize,
-    val colorful: Boolean,
-    val speed: DanmakuSpeed
-)
 
 data class Resolution(
     val videoResolution: VideoResolution,

@@ -204,6 +204,7 @@ private fun VideoDetailScreen(
                                     .fillMaxWidth()
                                     .fillMaxHeight(1 / uiState.danmakuPosition.code.toFloat())
                                     .align(Alignment.TopCenter)
+
                         ) {
 
                             DanmakuView()
@@ -213,6 +214,7 @@ private fun VideoDetailScreen(
                     }
 
 
+                    12.dp
 
 
 

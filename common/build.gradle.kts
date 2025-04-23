@@ -47,6 +47,9 @@ dependencies {
     implementation(libs.material)
     api(project(":api"))
 
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
