@@ -39,7 +39,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.abs
-import kotlin.random.Random
 
 
 private const val minRatio = 1.0f
@@ -80,6 +79,7 @@ class VideoDetailViewModel @Inject constructor(
     private val playlist = params.playlist.toMutableList()
     private val cidList = params.cidList.toMutableList()
 
+//    lateinit var density: Density
 
 //    private fun canBack(): Boolean{
 //        return playlist.isEmpty() && cidList.isEmpty()
@@ -198,6 +198,10 @@ class VideoDetailViewModel @Inject constructor(
         position: IntOffset,
         size: IntSize
     ) {
+        if (textHeight == danmakuItemHeight) {
+            textHeight = size.height
+        }
+
 //        val selfWidth = size.width
         val startTime = player.currentPosition
         val newValue = danmakuItem.copy(
@@ -206,7 +210,7 @@ class VideoDetailViewModel @Inject constructor(
             selfHeight = size.height,
             parentHeight = parentHeight,
             offsetX = danmakuViewWidth,
-            offsetY = position.y,
+//            offsetY = position.y,
             startTime = startTime,
             lastUpdateTime = startTime,
         )
@@ -218,6 +222,8 @@ class VideoDetailViewModel @Inject constructor(
             list
         }
     }
+
+    var textHeight = danmakuItemHeight
 
     private val danmakuFontSize = bilibiliStorage.danmakuFontSize
     private val colorful = bilibiliStorage.danmakuColorful
@@ -269,16 +275,17 @@ class VideoDetailViewModel @Inject constructor(
                 }
                 .forEach {
 
-                    val trackIndex =
-                        computeDanmakuTrackIndex(oldList, danmakuFontSize.textSize.value.toInt())
+                    val pair =
+                        computeDanmakuTrackIndex(oldList, textHeight)
 
-                    if (trackIndex != null) {
+                    if (pair != null) {
                         val item = DanmakuItem(
                             id = it.id,
                             content = it.content,
                             textSize = danmakuFontSize.textSize,
                             fontColor = it.rgb(colorful),
-                            trackIndex = trackIndex,
+                            trackIndex = pair.first,
+                            trackCount = pair.second,
                             offsetX = danmakuViewWidth
                         )
 
@@ -299,14 +306,14 @@ class VideoDetailViewModel @Inject constructor(
     private fun computeDanmakuTrackIndex(
         oldList: List<DanmakuItem>,
         danmakuItemHeight: Int = 72
-    ): Int? {
+    ): Pair<Int, Int>? {
         if (oldList.isEmpty()) {
-            return 1
+            return 1 to 2
         }
 
-        if (danmakuViewHeight == 0) {
-            return Random(10).nextInt()
-        }
+//        if (danmakuViewHeight == 0) {
+//            return Random(10).nextInt()
+//        }
 
         val count = danmakuViewHeight / danmakuItemHeight
 
@@ -320,10 +327,10 @@ class VideoDetailViewModel @Inject constructor(
                 it
             }.filter {
                 !usedTracks.contains(it)
-            }.random()
+            }.random() to count
         }
 
-        return oldList.groupBy {
+        val index = oldList.groupBy {
             it.trackIndex
         }.map { map ->
             map.key to (map.value.maxOfOrNull {
@@ -335,6 +342,8 @@ class VideoDetailViewModel @Inject constructor(
         }.map {
             it.first
         }.randomOrNull()
+
+        return if (index == null) null else index to count
     }
 
     private val _bilibiliDanmakuList = mutableListOf<BilibiliDanmaku>()
@@ -702,11 +711,12 @@ data class DanmakuItem(
     val startTime: Long = System.currentTimeMillis(),
 //    val onShowTime: Long,
     val offsetX: Int = 0,
-    val offsetY: Int = 0,
+//    val offsetY: Int = 0,
     /**
      * 弹幕在第几条轨道
      */
     val trackIndex: Int = 1,
+    val trackCount: Int = 2,
     var lastUpdateTime: Long = 0,
     var duration: Long = 0,
 //    val offsetYPercent: Float = Random.nextFloat()

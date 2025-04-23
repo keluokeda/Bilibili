@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -35,7 +34,7 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.ke.bilibili.tv.ui.theme.BilibiliTheme
 import com.ke.biliblli.viewmodel.VideoDetailViewModel
-import com.ke.biliblli.viewmodel.danmakuItemHeight
+import com.orhanobut.logger.Logger
 
 //
 //
@@ -192,6 +191,11 @@ fun DanmakuView(modifier: Modifier = Modifier) {
     val viewModel = hiltViewModel<VideoDetailViewModel>()
     val danmakuItems by viewModel.danmakuItemsForDisplay.collectAsStateWithLifecycle()
 
+//    LaunchedEffect(Unit) {
+//    viewModel.density = LocalDensity.current
+//    }
+
+
     BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
@@ -204,15 +208,14 @@ fun DanmakuView(modifier: Modifier = Modifier) {
             key(it.id) {
 
                 val content = @Composable {
-                    BasicText(
+                    Text(
                         it.content,
                         style = TextStyle(
                             color = it.fontColor.toColor(),
                             fontWeight = FontWeight.Bold,
                             fontSize = it.textSize
                         ),
-
-                        )
+                    )
                 }
 
                 if (it.selfWidth == 0) {
@@ -222,12 +225,13 @@ fun DanmakuView(modifier: Modifier = Modifier) {
                     Box(
                         modifier = Modifier
                             .offset(
-                                x = maxWidth, y = (it.trackIndex * danmakuItemHeight).dp
+                                x = maxWidth,
+                                y = maxHeight * (it.trackIndex / it.trackCount.toFloat())
                             )
                             .onGloballyPositioned { layout ->
                                 val position = layout.positionInParent().round()
                                 val size = layout.size
-//                                    Logger.d("position = $position, size = $size")
+                                Logger.d("position = $position, size = $size,font size = ${it.textSize.value}")
 
                                 viewModel.onDanmakuSizeMeasured(
                                     it,
@@ -244,7 +248,13 @@ fun DanmakuView(modifier: Modifier = Modifier) {
 //                    }
                 } else {
                     val offset by animateIntOffsetAsState(
-                        IntOffset(it.offsetX, it.offsetY),
+                        IntOffset(
+                            it.offsetX,
+//                            (maxHeight.value * (it.trackIndex / it.trackCount.toFloat())).toInt()
+                            (it.parentHeight * it.trackIndex / it.trackCount).toInt()
+                        ).apply {
+                            Logger.d("x = $x , y = $y , it = $it")
+                        },
                         label = "animateOffsetAsState",
                         animationSpec = tween(
                             durationMillis = it.duration.toInt(),
@@ -252,9 +262,17 @@ fun DanmakuView(modifier: Modifier = Modifier) {
                         )
                     )
 
-                    Box(modifier = Modifier.offset {
-                        offset
-                    }) {
+                    Box(modifier = Modifier
+                        .offset {
+                            offset
+                        }
+                        .onGloballyPositioned { layout ->
+                            Logger.d(
+                                "onGloballyPositioned ${
+                                    layout.positionInParent().round()
+                                } ,${layout.size} $it"
+                            )
+                        }) {
                         content()
                     }
                 }
