@@ -191,7 +191,7 @@ class VideoDetailViewModel @Inject constructor(
      * @param position 在父组件中的位置
      * @param size 自身的大小
      */
-    fun onDanmakuSizeMeasured(
+    fun onGloballyPositioned(
         danmakuItem: DanmakuItem,
         parentWidth: Int,
         parentHeight: Int,
@@ -454,6 +454,8 @@ class VideoDetailViewModel @Inject constructor(
         player.removeListener(playerListener)
         player.removeAnalyticsListener(analyticsListener)
         player.release()
+        hideControllerJob?.cancel()
+        hideProgressJob?.cancel()
     }
 
     private fun refresh() {
@@ -648,11 +650,13 @@ class VideoDetailViewModel @Inject constructor(
             VideoDetailAction.Backward -> {
                 val target = player.currentPosition - 10000
                 player.seekTo(if (target > 0) target else 0)
+                showProgress()
             }
 
             VideoDetailAction.Forward -> {
                 val target = player.currentPosition + 10000
                 player.seekTo(if (target >= player.duration) player.duration else target)
+                showProgress()
             }
 
             is VideoDetailAction.UpdateSpeed -> {
@@ -666,6 +670,22 @@ class VideoDetailViewModel @Inject constructor(
                 _uiState.update {
                     (it as? VideoDetailState.Content)?.copy(danmakuEnable = action.visible) ?: it
                 }
+            }
+        }
+    }
+
+    private var hideProgressJob: Job? = null
+
+    private fun showProgress(duration: Long = 3000) {
+        hideProgressJob?.cancel()
+
+        hideProgressJob = viewModelScope.launch {
+            _uiState.update {
+                (it as VideoDetailState.Content).copy(showProgress = true)
+            }
+            delay(duration)
+            _uiState.update {
+                (it as VideoDetailState.Content).copy(showProgress = false)
             }
         }
     }
@@ -687,6 +707,7 @@ class VideoDetailViewModel @Inject constructor(
                 }
             }
     }
+
 
 }
 

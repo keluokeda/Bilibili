@@ -50,6 +50,7 @@ import androidx.tv.material3.ListItem
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import coil.compose.AsyncImage
+import com.ke.bilibili.tv.observeWithLifecycle
 import com.ke.bilibili.tv.ui.component.Loading
 import com.ke.bilibili.tv.ui.theme.BilibiliPink
 import com.ke.biliblli.common.Screen
@@ -62,6 +63,10 @@ import com.ke.biliblli.viewmodel.TvVideoInfoViewModel
 internal fun VideoInfoRoute(navigate: (Any) -> Unit) {
     val viewModel = hiltViewModel<TvVideoInfoViewModel>()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    viewModel.event.observeWithLifecycle {
+        navigate(it.detail)
+    }
 
     VideoInfoScreen(uiState, {
         viewModel.handleAction(Unit)
