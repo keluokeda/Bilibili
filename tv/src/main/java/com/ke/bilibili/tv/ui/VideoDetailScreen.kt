@@ -121,6 +121,8 @@ internal fun VideoDetailRoute(
             viewModel.handleAction(VideoDetailAction.Backward)
         }, {
             viewModel.handleAction(VideoDetailAction.UpdateSpeed(it))
+        }, {
+            viewModel.handleAction(VideoDetailAction.SetDanmakuVisible(it))
         })
 
 
@@ -138,7 +140,8 @@ private fun VideoDetailScreen(
     forward: () -> Unit,
     togglePlay: () -> Unit,
     backward: () -> Unit,
-    updateSpeed: (VideoSpeed) -> Unit
+    updateSpeed: (VideoSpeed) -> Unit,
+    setDanmakuVisible: (Boolean) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         when (uiState) {
@@ -313,9 +316,11 @@ private fun VideoDetailScreen(
 
                             ListItem(
                                 selected = false,
-                                onClick = {},
+                                onClick = {
+                                    setDanmakuVisible(!uiState.danmakuEnable)
+                                },
                                 headlineContent = { Text("弹幕开关") }, leadingContent = {
-                                    Switch(false, onCheckedChange = {})
+                                    Switch(uiState.danmakuEnable, onCheckedChange = {})
                                 })
 
 

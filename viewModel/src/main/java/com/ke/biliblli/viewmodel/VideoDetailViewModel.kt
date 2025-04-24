@@ -661,6 +661,12 @@ class VideoDetailViewModel @Inject constructor(
                     (it as? VideoDetailState.Content)?.copy(videoSpeed = action.videoSpeed) ?: it
                 }
             }
+
+            is VideoDetailAction.SetDanmakuVisible -> {
+                _uiState.update {
+                    (it as? VideoDetailState.Content)?.copy(danmakuEnable = action.visible) ?: it
+                }
+            }
         }
     }
 
@@ -795,6 +801,8 @@ sealed interface VideoDetailAction {
     data object Forward : VideoDetailAction
 
     data class UpdateSpeed(val videoSpeed: VideoSpeed) : VideoDetailAction
+
+    data class SetDanmakuVisible(val visible: Boolean) : VideoDetailAction
 }
 
 sealed interface VideoDetailEvent {
