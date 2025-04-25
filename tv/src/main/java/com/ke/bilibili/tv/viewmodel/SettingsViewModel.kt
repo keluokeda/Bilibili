@@ -31,7 +31,8 @@ class SettingsViewModel @Inject constructor(
         DanmakuFontSize.Medium,
         false,
         false,
-        playerViewShowMiniProgressBar = false
+        playerViewShowMiniProgressBar = false,
+        directPlay = false
     )
 ) {
 
@@ -51,7 +52,8 @@ class SettingsViewModel @Inject constructor(
             bilibiliStorage.danmakuColorful,
             defaultTab = MainTab.entries.first { it.index == bilibiliStorage.mainDefaultTab },
             cacheSize = context.cacheSize(),
-            playerViewShowMiniProgressBar = bilibiliStorage.playerViewShowMiniProgressBar
+            playerViewShowMiniProgressBar = bilibiliStorage.playerViewShowMiniProgressBar,
+            directPlay = bilibiliStorage.directPlay
         )
     }
 
@@ -129,6 +131,10 @@ class SettingsViewModel @Inject constructor(
             is SettingsAction.SetPlayerViewShowMiniProgressBar -> {
                 bilibiliStorage.playerViewShowMiniProgressBar = action.value
             }
+
+            is SettingsAction.SetDirectPlay -> {
+                bilibiliStorage.directPlay = action.value
+            }
         }
 
         refresh()
@@ -171,7 +177,8 @@ data class SettingsState(
     val loading: Boolean = false,
     val defaultTab: MainTab = MainTab.Recommend,
     val cacheSize: String = "0MB",
-    val playerViewShowMiniProgressBar: Boolean
+    val playerViewShowMiniProgressBar: Boolean,
+    val directPlay: Boolean
 )
 
 sealed interface SettingsAction {
@@ -198,6 +205,8 @@ sealed interface SettingsAction {
 
 
     data class SetPlayerViewShowMiniProgressBar(val value: Boolean) : SettingsAction
+
+    data class SetDirectPlay(val value: Boolean) : SettingsAction
 }
 
 sealed interface SettingsEvent {

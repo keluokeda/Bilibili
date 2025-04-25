@@ -16,14 +16,11 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
@@ -152,23 +149,23 @@ import com.orhanobut.logger.Logger
 //    }
 //}
 
-@Composable
-fun MeasureUnconstrainedViewWidth(
-    viewToMeasure: @Composable () -> Unit,
-    content: @Composable (measuredWidth: Dp) -> Unit,
-) {
-    SubcomposeLayout { constraints ->
-        val measuredWidth = subcompose("viewToMeasure", viewToMeasure)[0]
-            .measure(Constraints()).width.toDp()
-
-        val contentPlaceable = subcompose("content") {
-            content(measuredWidth)
-        }[0].measure(constraints)
-        layout(contentPlaceable.width, contentPlaceable.height) {
-            contentPlaceable.place(0, 0)
-        }
-    }
-}
+//@Composable
+//fun MeasureUnconstrainedViewWidth(
+//    viewToMeasure: @Composable () -> Unit,
+//    content: @Composable (measuredWidth: Dp) -> Unit,
+//) {
+//    SubcomposeLayout { constraints ->
+//        val measuredWidth = subcompose("viewToMeasure", viewToMeasure)[0]
+//            .measure(Constraints()).width.toDp()
+//
+//        val contentPlaceable = subcompose("content") {
+//            content(measuredWidth)
+//        }[0].measure(constraints)
+//        layout(contentPlaceable.width, contentPlaceable.height) {
+//            contentPlaceable.place(0, 0)
+//        }
+//    }
+//}
 
 //
 //@Serializable
@@ -233,7 +230,7 @@ fun DanmakuView(modifier: Modifier = Modifier) {
                                 val size = layout.size
                                 Logger.d("position = $position, size = $size,font size = ${it.textSize.value}")
 
-                                viewModel.onDanmakuSizeMeasured(
+                                viewModel.onGloballyPositioned(
                                     it,
                                     constraints.maxWidth,
                                     constraints.maxHeight,

@@ -86,6 +86,8 @@ fun SettingsRoute(navigate: (Any) -> Unit) {
         viewModel.handleAction(SettingsAction.ClearCache)
     }, {
         viewModel.handleAction(SettingsAction.SetPlayerViewShowMiniProgressBar(it))
+    }, {
+        viewModel.handleAction(SettingsAction.SetDirectPlay(it))
     })
 
     if (state.loading) {
@@ -115,7 +117,8 @@ private fun SettingsScreen(
     logout: () -> Unit,
     setDefaultTab: (MainTab) -> Unit,
     clearCache: () -> Unit,
-    setPlayerViewShowMiniProgressBar: (Boolean) -> Unit
+    setPlayerViewShowMiniProgressBar: (Boolean) -> Unit,
+    setDirectPlay: (Boolean) -> Unit
 ) {
 
 
@@ -200,6 +203,21 @@ private fun SettingsScreen(
             }
         }
 
+
+        item {
+
+
+            ListItem(selected = false, onClick = {
+                setDirectPlay(!state.directPlay)
+            }, modifier = columnModifier, headlineContent = {
+                Text("点击视频封面直接播放", style = titleTextStyle.copy(color = Color.Unspecified))
+            }, trailingContent = {
+                Switch(checked = state.directPlay, onCheckedChange = {
+
+                })
+            })
+
+        }
 
 
         item {
