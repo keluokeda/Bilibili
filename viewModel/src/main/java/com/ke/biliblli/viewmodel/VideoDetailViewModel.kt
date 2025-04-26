@@ -2,7 +2,6 @@ package com.ke.biliblli.viewmodel
 
 import android.content.Context
 import androidx.compose.ui.layout.LayoutCoordinates
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.lifecycle.SavedStateHandle
@@ -188,28 +187,30 @@ class VideoDetailViewModel @Inject constructor(
 
     /**
      * @param parentWidth 父组件宽度
-     * @param position 在父组件中的位置
      * @param size 自身的大小
      */
     fun onGloballyPositioned(
         danmakuItem: DanmakuItem,
         parentWidth: Int,
         parentHeight: Int,
-        position: IntOffset,
         size: IntSize
     ) {
         if (textHeight == danmakuItemHeight) {
             textHeight = size.height
         }
 
+        if (danmakuItem.selfWidth != 0) {
+            return
+        }
+
 //        val selfWidth = size.width
         val startTime = player.currentPosition
         val newValue = danmakuItem.copy(
             parentWidth = parentWidth,
-            selfWidth = size.height,
+            selfWidth = size.width,
             selfHeight = size.height,
             parentHeight = parentHeight,
-            offsetX = danmakuViewWidth,
+            offsetX = if (danmakuV1Enable) 0 else danmakuViewWidth,
 //            offsetY = position.y,
             startTime = startTime,
             lastUpdateTime = startTime,
@@ -229,6 +230,8 @@ class VideoDetailViewModel @Inject constructor(
     private val colorful = bilibiliStorage.danmakuColorful
     private val danmakuSpeed = bilibiliStorage.danmakuSpeed
     private val danmakuDensity = bilibiliStorage.danmakuDensity
+
+    private var danmakuV1Enable = bilibiliStorage.danmakuVersion == 1
     private fun onVideoPositionChanged(currentPosition: Long) {
 
         if (player.duration <= 0) {
@@ -246,57 +249,129 @@ class VideoDetailViewModel @Inject constructor(
 
         _danmakuItemsForDisplay.update { list ->
 
-            val oldList = list.filter {
-                currentPosition - it.startTime < danmakuSpeed.duration && currentPosition - it.startTime > 0
+            if (danmakuV1Enable) {
+                updateDanmakuV1(list, currentPosition, targetList.toMutableList())
+            } else {
+                updateDanmakuV0(list, currentPosition, targetList)
             }
-                .map {
-                    if (it.parentWidth != 0) {
-                        val speed =
-                            (it.parentWidth + it.selfWidth) / danmakuSpeed.duration.toFloat()
-                        val duration = currentPosition - it.startTime
-                        val animationDuration = currentPosition - it.lastUpdateTime
-                        val interval = (duration) * speed
-//                        Logger.d("speed = $speed, duration = $duration ,interval = $interval,offset = ${it.parentWidth - interval}")
-                        it.lastUpdateTime = currentPosition
-                        it.duration = animationDuration
-//                    val percent =
-//                        (System.currentTimeMillis() - it.startTime) / danmakuSpeed.duration.toFloat()
-                        val xOffset = it.parentWidth - interval
-                        it.copy(offsetX = xOffset.toInt())
-                    } else {
-                        it
-                    }
-                }.toMutableList()
 
-            targetList
-                .filterIndexed { index, item ->
-                    danmakuDensity == DanmakuDensity.Normal ||
-                            index % danmakuDensity.code == 0
-                }
-                .forEach {
-
-                    val pair =
-                        computeDanmakuTrackIndex(oldList, textHeight)
-
-                    if (pair != null) {
-                        val item = DanmakuItem(
-                            id = it.id,
-                            content = it.content,
-                            textSize = danmakuFontSize.textSize,
-                            fontColor = it.rgb(colorful),
-                            trackIndex = pair.first,
-                            trackCount = pair.second,
-                            offsetX = danmakuViewWidth
-                        )
-
-                        oldList.add(item)
-                    }
-
-
-                }
-
-            oldList
         }
+    }
+
+    private fun updateDanmakuV1(
+        list: List<DanmakuItem>,
+        currentPosition: Long,
+        targetList: MutableList<BilibiliDanmaku>
+    ): List<DanmakuItem> {
+        val oldList = list.filter {
+            currentPosition - it.startTime < danmakuSpeed.duration && currentPosition - it.startTime > 0
+        }
+
+        val count = danmakuViewHeight / danmakuItemHeight
+
+        if (count == 0) {
+            return emptyList()
+        }
+
+        if (oldList.size >= count) {
+            return oldList
+        }
+        val mutableList = oldList.toMutableList()
+        while (mutableList.size < count && targetList.isNotEmpty()) {
+            //当前已用的轨道
+            val tracks = mutableList.map { it.trackIndex }
+
+            //可用的轨道
+            val list = mutableListOf<Int>()
+
+            repeat(count) {
+                if (!tracks.contains(it)) {
+                    list.add(it)
+                }
+            }
+
+            val target = targetList.removeAt(0)
+
+
+
+            mutableList.add(
+                DanmakuItem(
+                    id = target.id,
+                    content = target.content,
+                    textSize = danmakuFontSize.textSize,
+                    fontColor = target.rgb(colorful),
+                    trackIndex = list.random(),
+                    trackCount = count,
+                    offsetX = danmakuViewWidth,
+                    duration = danmakuSpeed.duration
+                )
+            )
+
+        }
+
+        return mutableList
+
+    }
+
+    private fun updateDanmakuV0(
+        list: List<DanmakuItem>,
+        currentPosition: Long,
+        targetList: List<BilibiliDanmaku>
+    ): List<DanmakuItem> {
+        val oldList = list.filter {
+            currentPosition - it.startTime < danmakuSpeed.duration && currentPosition - it.startTime > 0
+        }
+            .map {
+                if (it.parentWidth != 0) {
+                    val speed =
+                        (it.parentWidth) / danmakuSpeed.duration.toFloat()
+                    val duration = currentPosition - it.startTime
+                    val animationDuration = currentPosition - it.lastUpdateTime
+                    val interval = (duration) * speed
+                    //                        Logger.d("speed = $speed, duration = $duration ,interval = $interval,offset = ${it.parentWidth - interval}")
+                    it.lastUpdateTime = currentPosition
+                    it.duration = animationDuration
+                    //                    val percent =
+                    //                        (System.currentTimeMillis() - it.startTime) / danmakuSpeed.duration.toFloat()
+                    val xOffset = it.parentWidth - interval
+                    it.copy(offsetX = xOffset.toInt())
+                } else {
+                    it
+                }
+            }.toMutableList()
+
+        targetList
+            .filterIndexed { index, item ->
+                danmakuDensity == DanmakuDensity.Normal ||
+                        index % danmakuDensity.code == 0
+            }
+            .forEach {
+
+                val pair =
+                    computeDanmakuTrackIndex(oldList, textHeight)
+
+                if (pair != null) {
+                    val item = DanmakuItem(
+                        id = it.id,
+                        content = it.content,
+                        textSize = danmakuFontSize.textSize,
+                        fontColor = it.rgb(colorful),
+                        trackIndex = pair.first,
+                        trackCount = pair.second,
+                        offsetX = danmakuViewWidth
+                    )
+
+
+
+                    oldList.add(item)
+
+                    //                        oldList.groupBy { it.trackIndex }
+                }
+
+
+            }
+
+        return oldList
     }
 
 
@@ -323,19 +398,27 @@ class VideoDetailViewModel @Inject constructor(
 
         if (usedTracks.size < count - 1) {
             //还有可用的轨道 返回可用的轨道
-            return List(count - 1) {
+            val pair = List(count - 1) {
                 it
             }.filter {
                 !usedTracks.contains(it)
             }.random() to count
+
+//            Logger.d("使用轨道${pair.first} ,当前已用轨道 ${usedTracks}")
+
+            return pair
         }
 
         val index = oldList.groupBy {
             it.trackIndex
         }.map { map ->
-            map.key to (map.value.maxOfOrNull {
-                it.selfWidth + it.offsetX
-            } ?: 0)
+            val pair = map.key to (
+                    map.value
+                        .maxOfOrNull {
+                            it.selfWidth + it.offsetX
+                        } ?: 0)
+
+            pair
 
         }.filter {
             it.second < danmakuViewWidth

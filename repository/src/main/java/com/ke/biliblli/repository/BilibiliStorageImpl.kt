@@ -60,6 +60,14 @@ class BilibiliStorageImpl @Inject constructor(
             }
         }
 
+    override var danmakuVersion: Int
+        get() = sharedPreferences.getInt("danmakuVersion", 0)
+        set(value) {
+            sharedPreferences.edit(commit = true) {
+                putInt("danmakuVersion", value)
+            }
+        }
+
     override var danmakuColorful: Boolean
         get() = sharedPreferences.getBoolean("danmakuColorful", false)
         set(value) {

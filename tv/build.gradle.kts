@@ -17,8 +17,8 @@ android {
         applicationId = "com.ke.bilibili.tv"
         minSdk = 21
         targetSdk = 35
-        versionCode = 24
-        versionName = "1.2.4"
+        versionCode = 26
+        versionName = "1.2.6"
 
 
     }

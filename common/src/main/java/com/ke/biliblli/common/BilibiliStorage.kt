@@ -25,6 +25,7 @@ interface BilibiliStorage {
 
     var danmakuColorful: Boolean
 
+    var danmakuVersion: Int
 
     /**
      * 默认首页选项卡

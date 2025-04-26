@@ -88,6 +88,8 @@ fun SettingsRoute(navigate: (Any) -> Unit) {
         viewModel.handleAction(SettingsAction.SetPlayerViewShowMiniProgressBar(it))
     }, {
         viewModel.handleAction(SettingsAction.SetDirectPlay(it))
+    }, {
+        viewModel.handleAction(SettingsAction.SetDanmakuVersion(it))
     })
 
     if (state.loading) {
@@ -118,7 +120,8 @@ private fun SettingsScreen(
     setDefaultTab: (MainTab) -> Unit,
     clearCache: () -> Unit,
     setPlayerViewShowMiniProgressBar: (Boolean) -> Unit,
-    setDirectPlay: (Boolean) -> Unit
+    setDirectPlay: (Boolean) -> Unit,
+    setDanmakuVersion: (Int) -> Unit
 ) {
 
 
@@ -229,6 +232,23 @@ private fun SettingsScreen(
                 Text("弹幕开关", style = titleTextStyle.copy(color = Color.Unspecified))
             }, trailingContent = {
                 Switch(checked = state.danmakuEnable, onCheckedChange = {
+
+                })
+            })
+
+        }
+
+        item {
+
+
+            ListItem(selected = false, onClick = {
+                setDanmakuVersion(if (state.danmakuVersion == 0) 1 else 0)
+            }, modifier = columnModifier, headlineContent = {
+                Text("弹幕优化", style = titleTextStyle.copy(color = Color.Unspecified))
+            }, supportingContent = {
+                Text("开启后，每行同一时间只显示一条弹幕")
+            }, trailingContent = {
+                Switch(checked = state.danmakuVersion == 1, onCheckedChange = {
 
                 })
             })

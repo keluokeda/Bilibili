@@ -17,13 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.round
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
@@ -31,7 +29,6 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.ke.bilibili.tv.ui.theme.BilibiliTheme
 import com.ke.biliblli.viewmodel.VideoDetailViewModel
-import com.orhanobut.logger.Logger
 
 //
 //
@@ -215,64 +212,65 @@ fun DanmakuView(modifier: Modifier = Modifier) {
                     )
                 }
 
-                if (it.selfWidth == 0) {
-//                    MeasureUnconstrainedViewWidth(viewToMeasure = content) { width ->
-
-
-                    Box(
-                        modifier = Modifier
-                            .offset(
-                                x = maxWidth,
-                                y = maxHeight * (it.trackIndex / it.trackCount.toFloat())
-                            )
-                            .onGloballyPositioned { layout ->
-                                val position = layout.positionInParent().round()
-                                val size = layout.size
-                                Logger.d("position = $position, size = $size,font size = ${it.textSize.value}")
-
-                                viewModel.onGloballyPositioned(
-                                    it,
-                                    constraints.maxWidth,
-                                    constraints.maxHeight,
-//                                        width.value.toInt(),
-                                    position,
-                                    size
-                                )
-                            }
-                    ) {
-                        content()
-                    }
+//                if (it.selfWidth == 0) {
+//                    Box(
+//                        modifier = Modifier
+//                            .offset(
+//                                x = maxWidth,
+//                                y = maxHeight * (it.trackIndex / it.trackCount.toFloat())
+//                            )
+//                            .onGloballyPositioned { layout ->
+////                                val position = layout.positionInParent().round()
+//                                val size = layout.size
+//                                viewModel.onGloballyPositioned(
+//                                    it,
+//                                    constraints.maxWidth,
+//                                    constraints.maxHeight,
+//                                    size
+//                                )
+//                            }
+//                    ) {
+//                        content()
 //                    }
-                } else {
-                    val offset by animateIntOffsetAsState(
-                        IntOffset(
-                            it.offsetX,
+////                    }
+//                } else {
+                val offset by animateIntOffsetAsState(
+                    IntOffset(
+                        it.offsetX,
 //                            (maxHeight.value * (it.trackIndex / it.trackCount.toFloat())).toInt()
-                            (it.parentHeight * it.trackIndex / it.trackCount).toInt()
-                        ).apply {
-                            Logger.d("x = $x , y = $y , it = $it")
-                        },
-                        label = "animateOffsetAsState",
-                        animationSpec = tween(
-                            durationMillis = it.duration.toInt(),
-                            easing = LinearEasing
-                        )
+                        (constraints.maxHeight * it.trackIndex / it.trackCount).toInt()
+                    ).apply {
+//                            Logger.d("x = $x , y = $y , it = $it")
+                    },
+                    label = "animateOffsetAsState",
+                    animationSpec = tween(
+                        durationMillis = it.duration.toInt(),
+                        easing = LinearEasing
                     )
+                )
 
-                    Box(modifier = Modifier
+                Box(
+                    modifier = Modifier
                         .offset {
                             offset
                         }
                         .onGloballyPositioned { layout ->
-                            Logger.d(
-                                "onGloballyPositioned ${
-                                    layout.positionInParent().round()
-                                } ,${layout.size} $it"
+
+                            viewModel.onGloballyPositioned(
+                                it,
+                                constraints.maxWidth,
+                                constraints.maxHeight,
+                                layout.size
                             )
+//                            Logger.d(
+//                                "onGloballyPositioned ${
+//                                    layout.positionInParent().round()
+//                                } ,${layout.size} $it"
+//                            )
                         }) {
-                        content()
-                    }
+                    content()
                 }
+//                }
             }
         }
     }

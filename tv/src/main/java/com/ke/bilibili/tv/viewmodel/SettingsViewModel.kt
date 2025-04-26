@@ -32,7 +32,8 @@ class SettingsViewModel @Inject constructor(
         false,
         false,
         playerViewShowMiniProgressBar = false,
-        directPlay = false
+        directPlay = false,
+        danmakuVersion = 1
     )
 ) {
 
@@ -53,7 +54,8 @@ class SettingsViewModel @Inject constructor(
             defaultTab = MainTab.entries.first { it.index == bilibiliStorage.mainDefaultTab },
             cacheSize = context.cacheSize(),
             playerViewShowMiniProgressBar = bilibiliStorage.playerViewShowMiniProgressBar,
-            directPlay = bilibiliStorage.directPlay
+            directPlay = bilibiliStorage.directPlay,
+            danmakuVersion = bilibiliStorage.danmakuVersion
         )
     }
 
@@ -135,6 +137,10 @@ class SettingsViewModel @Inject constructor(
             is SettingsAction.SetDirectPlay -> {
                 bilibiliStorage.directPlay = action.value
             }
+
+            is SettingsAction.SetDanmakuVersion -> {
+                bilibiliStorage.danmakuVersion = action.value
+            }
         }
 
         refresh()
@@ -178,8 +184,10 @@ data class SettingsState(
     val defaultTab: MainTab = MainTab.Recommend,
     val cacheSize: String = "0MB",
     val playerViewShowMiniProgressBar: Boolean,
-    val directPlay: Boolean
-)
+    val directPlay: Boolean,
+    val danmakuVersion: Int,
+
+    )
 
 sealed interface SettingsAction {
     data class UpdateVideoResolution(val value: VideoResolution) : SettingsAction
@@ -207,6 +215,8 @@ sealed interface SettingsAction {
     data class SetPlayerViewShowMiniProgressBar(val value: Boolean) : SettingsAction
 
     data class SetDirectPlay(val value: Boolean) : SettingsAction
+
+    data class SetDanmakuVersion(val value: Int) : SettingsAction
 }
 
 sealed interface SettingsEvent {
