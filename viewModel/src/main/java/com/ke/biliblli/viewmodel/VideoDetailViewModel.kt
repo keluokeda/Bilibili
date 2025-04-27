@@ -2,6 +2,7 @@ package com.ke.biliblli.viewmodel
 
 import android.content.Context
 import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.lifecycle.SavedStateHandle
@@ -102,6 +103,17 @@ class VideoDetailViewModel @Inject constructor(
         danmakuViewWidth = coordinates.size.width
     }
 
+
+    fun onAnimationFinish(danmakuItem: DanmakuItem) {
+        _danmakuItemsForDisplay.update { list ->
+            list.toMutableList().apply {
+                removeAll {
+                    it.id == danmakuItem.id
+                }
+            }
+        }
+    }
+
     private val analyticsListener = object : AnalyticsListener {
     }
 
@@ -185,6 +197,40 @@ class VideoDetailViewModel @Inject constructor(
 
     val danmakuItemsForDisplay = _danmakuItemsForDisplay.asStateFlow()
 
+
+    fun onGloballyPositionedV2(
+        danmakuItem: DanmakuItem,
+        parentWidth: Int,
+        parentHeight: Int,
+        size: IntSize,
+        round: IntOffset
+    ) {
+
+        val startTime = player.currentPosition
+
+        val newValue = danmakuItem.copy(
+            parentWidth = parentWidth,
+            selfWidth = size.width,
+            selfHeight = size.height,
+            parentHeight = parentHeight,
+            offsetX = round.x,
+            targetOffsetX = 0,
+//            offsetY = position.y,
+            startTime = startTime,
+            lastUpdateTime = startTime,
+        )
+
+        _danmakuItemsForDisplay.update {
+            val list = it.toMutableList()
+            val index = list.indexOf(danmakuItem)
+            if (index != -1) {
+                list[index] = newValue
+            }
+
+            list
+        }
+    }
+
     /**
      * @param parentWidth 父组件宽度
      * @param size 自身的大小
@@ -198,6 +244,12 @@ class VideoDetailViewModel @Inject constructor(
         if (textHeight == danmakuItemHeight) {
             textHeight = size.height
         }
+
+
+//        if (danmakuVersion == 2) {
+//            onGloballyPositionedV2(danmakuItem, parentWidth, parentHeight, size)
+//            return
+//        }
 
         if (danmakuItem.selfWidth != 0) {
             return
@@ -232,6 +284,8 @@ class VideoDetailViewModel @Inject constructor(
     private val danmakuDensity = bilibiliStorage.danmakuDensity
 
     private var danmakuV1Enable = bilibiliStorage.danmakuVersion == 1
+
+    val danmakuVersion = 2
     private fun onVideoPositionChanged(currentPosition: Long) {
 
         if (player.duration <= 0) {
@@ -249,13 +303,80 @@ class VideoDetailViewModel @Inject constructor(
 
         _danmakuItemsForDisplay.update { list ->
 
-            if (danmakuV1Enable) {
+            if (danmakuVersion == 2) {
+                updateDanmakuV2(list, currentPosition, targetList)
+            } else if (danmakuV1Enable) {
                 updateDanmakuV1(list, currentPosition, targetList.toMutableList())
             } else {
                 updateDanmakuV0(list, currentPosition, targetList)
             }
 
         }
+    }
+
+
+    private fun updateDanmakuV2(
+        list: List<DanmakuItem>,
+        currentPosition: Long,
+        targetList: List<BilibiliDanmaku>
+    ): List<DanmakuItem> {
+        val oldList =
+            list
+//                .filter {
+//                    currentPosition - it.startTime < danmakuSpeed.duration && currentPosition - it.startTime > 0
+//                }
+//                .map {
+//                    if (it.parentWidth != 0) {
+//                        val speed =
+//                            (it.parentWidth) / danmakuSpeed.duration.toFloat()
+//                        val duration = currentPosition - it.startTime
+//                        val animationDuration = currentPosition - it.lastUpdateTime
+//                        val interval = (duration) * speed
+//                        it.lastUpdateTime = currentPosition
+//                        it.duration = animationDuration
+//                        val xOffset = it.parentWidth - interval
+//                        it.copy(offsetX = xOffset.toInt())
+//                    } else {
+//                        it
+//                    }
+//                }
+                .toMutableList()
+
+        targetList
+            .filterIndexed { index, item ->
+                danmakuDensity == DanmakuDensity.Normal ||
+                        index % danmakuDensity.code == 0
+            }
+            .forEach {
+
+                val pair =
+                    computeDanmakuTrackIndex(oldList, textHeight)
+
+                if (pair != null) {
+                    val item = DanmakuItem(
+                        id = it.id,
+                        content = it.content,
+                        startTime = currentPosition,
+                        textSize = danmakuFontSize.textSize,
+                        fontColor = it.rgb(colorful),
+                        trackIndex = pair.first,
+                        trackCount = pair.second,
+                        offsetX = danmakuViewWidth,
+                        targetOffsetX = danmakuViewWidth,
+                        duration = danmakuSpeed.duration
+                    )
+
+
+
+                    oldList.add(item)
+
+                    //                        oldList.groupBy { it.trackIndex }
+                }
+
+
+            }
+
+        return oldList
     }
 
     private fun updateDanmakuV1(
@@ -328,11 +449,8 @@ class VideoDetailViewModel @Inject constructor(
                     val duration = currentPosition - it.startTime
                     val animationDuration = currentPosition - it.lastUpdateTime
                     val interval = (duration) * speed
-                    //                        Logger.d("speed = $speed, duration = $duration ,interval = $interval,offset = ${it.parentWidth - interval}")
                     it.lastUpdateTime = currentPosition
                     it.duration = animationDuration
-                    //                    val percent =
-                    //                        (System.currentTimeMillis() - it.startTime) / danmakuSpeed.duration.toFloat()
                     val xOffset = it.parentWidth - interval
                     it.copy(offsetX = xOffset.toInt())
                 } else {
@@ -829,6 +947,7 @@ data class DanmakuItem(
     val trackCount: Int = 2,
     var lastUpdateTime: Long = 0,
     var duration: Long = 0,
+    val targetOffsetX: Int = 0,
 //    val offsetYPercent: Float = Random.nextFloat()
 )
 

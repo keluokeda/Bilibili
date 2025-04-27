@@ -238,22 +238,22 @@ private fun SettingsScreen(
 
         }
 
-        item {
-
-
-            ListItem(selected = false, onClick = {
-                setDanmakuVersion(if (state.danmakuVersion == 0) 1 else 0)
-            }, modifier = columnModifier, headlineContent = {
-                Text("弹幕优化", style = titleTextStyle.copy(color = Color.Unspecified))
-            }, supportingContent = {
-                Text("开启后，每行同一时间只显示一条弹幕")
-            }, trailingContent = {
-                Switch(checked = state.danmakuVersion == 1, onCheckedChange = {
-
-                })
-            })
-
-        }
+//        item {
+//
+//
+//            ListItem(selected = false, onClick = {
+//                setDanmakuVersion(if (state.danmakuVersion == 0) 1 else 0)
+//            }, modifier = columnModifier, headlineContent = {
+//                Text("弹幕优化", style = titleTextStyle.copy(color = Color.Unspecified))
+//            }, supportingContent = {
+//                Text("开启后，每行同一时间只显示一条弹幕")
+//            }, trailingContent = {
+//                Switch(checked = state.danmakuVersion == 1, onCheckedChange = {
+//
+//                })
+//            })
+//
+//        }
 
         item {
 

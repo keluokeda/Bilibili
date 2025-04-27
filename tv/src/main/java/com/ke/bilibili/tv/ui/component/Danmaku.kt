@@ -17,11 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.round
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
@@ -236,7 +238,8 @@ fun DanmakuView(modifier: Modifier = Modifier) {
 //                } else {
                 val offset by animateIntOffsetAsState(
                     IntOffset(
-                        it.offsetX,
+                        if (viewModel.danmakuVersion == 2) it.targetOffsetX else
+                            it.offsetX,
 //                            (maxHeight.value * (it.trackIndex / it.trackCount.toFloat())).toInt()
                         (constraints.maxHeight * it.trackIndex / it.trackCount).toInt()
                     ).apply {
@@ -246,7 +249,11 @@ fun DanmakuView(modifier: Modifier = Modifier) {
                     animationSpec = tween(
                         durationMillis = it.duration.toInt(),
                         easing = LinearEasing
-                    )
+                    ), finishedListener = { offset ->
+                        if (viewModel.danmakuVersion == 2) {
+                            viewModel.onAnimationFinish(it)
+                        }
+                    }
                 )
 
                 Box(
@@ -256,12 +263,24 @@ fun DanmakuView(modifier: Modifier = Modifier) {
                         }
                         .onGloballyPositioned { layout ->
 
-                            viewModel.onGloballyPositioned(
-                                it,
-                                constraints.maxWidth,
-                                constraints.maxHeight,
-                                layout.size
-                            )
+                            if (viewModel.danmakuVersion == 2) {
+                                viewModel.onGloballyPositionedV2(
+                                    it,
+                                    constraints.maxWidth,
+                                    constraints.maxHeight,
+                                    layout.size,
+                                    layout.positionInParent().round()
+                                )
+                            } else {
+                                viewModel.onGloballyPositioned(
+                                    it,
+                                    constraints.maxWidth,
+                                    constraints.maxHeight,
+                                    layout.size,
+                                )
+                            }
+
+
 //                            Logger.d(
 //                                "onGloballyPositioned ${
 //                                    layout.positionInParent().round()
