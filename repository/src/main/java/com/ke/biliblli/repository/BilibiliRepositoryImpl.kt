@@ -453,7 +453,7 @@ object WbiUtil {
         val mixinKey = getMixinKey(imgKey, subKey)
 
 
-        val param = map.entries.joinToString("&") { it ->
+        val param = map.entries.joinToString("&") {
             String.format(
                 "%s=%s",
                 it.key,

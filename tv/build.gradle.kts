@@ -94,14 +94,15 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
 
 //    implementation("io.sanghun:compose-video:1.2.0")
-    implementation("androidx.media3:media3-exoplayer:1.6.0") // [Required] androidx.media3 ExoPlayer dependency
-    implementation("androidx.media3:media3-session:1.6.0") // [Required] MediaSession Extension dependency
-    implementation("androidx.media3:media3-ui:1.6.0") // [Required] Base Player UI
+    implementation("androidx.media3:media3-exoplayer:1.8.0") // [Required] androidx.media3 ExoPlayer dependency
+    implementation("androidx.media3:media3-session:1.8.0") // [Required] MediaSession Extension dependency
+    implementation("androidx.media3:media3-ui:1.8.0") // [Required] Base Player UI
+    implementation("androidx.media3:media3-ui-compose:1.8.0")
 
-    implementation("androidx.media3:media3-exoplayer-dash:1.6.0") // [Optional] If your media item is DASH
-    implementation("androidx.media3:media3-exoplayer-hls:1.6.0") // [Optional] If your media item is HLS (m3u8..)
+    implementation("androidx.media3:media3-exoplayer-dash:1.8.0") // [Optional] If your media item is DASH
+    implementation("androidx.media3:media3-exoplayer-hls:1.8.0") // [Optional] If your media item is HLS (m3u8..)
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 
     implementation("com.orhanobut:logger:2.2.0")
 
